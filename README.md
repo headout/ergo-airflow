@@ -9,6 +9,7 @@
 
 - **IMPORTANT!** Add a dummy DAG in your DAGs folder (<AIRFLOW_HOME>/dags) to load required Ergo DAGs. You can use [this script](sample/dags/dag_ergo.py).
 - Enable two DAGS - `ergo_task_queuer` and `ergo_job_collector` in the Airflow UI.
+- An example DAG using Ergo to offload tasks can be [found here](sample/dags/example.py).
 
 ## Configuration
 
