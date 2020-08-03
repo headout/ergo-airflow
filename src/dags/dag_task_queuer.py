@@ -15,8 +15,8 @@ TASK_ID_REQUEST_SENSOR = "collect_requests"
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'retries': 10,
-    'retry_delay': timedelta(minutes=2),
+    'retries': 2,
+    'retry_delay': timedelta(minutes=1),
     'start_date': days_ago(1),
 }
 
@@ -34,7 +34,9 @@ with DAG(
     collector = TaskRequestBatchSensor(
         task_id=TASK_ID_REQUEST_SENSOR,
         max_requests=max_requests,
-        xcom_tasks_key=XCOM_REQUEST_TASK_KEY
+        xcom_tasks_key=XCOM_REQUEST_TASK_KEY,
+        poke_interval=timedelta(minutes=2).total_seconds(),
+        timeout=timedelta(minutes=10).total_seconds()
     )
 
     pusher = SqsTaskPusherOperator(

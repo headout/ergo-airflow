@@ -17,12 +17,12 @@ class TaskRequestBatchSensor(BaseSensorOperator):
         *args,
         **kwargs
     ):
-        poke_interval = kwargs.get('retry_delay', timedelta(minutes=1))
-        timeout = poke_interval * kwargs.get('retries', 10)
+        _poke_interval = kwargs.get('retry_delay', timedelta(minutes=1))
+        _timeout = _poke_interval * kwargs.get('retries', 10)
         kwargs['soft_fail'] = True
         kwargs['poke_interval'] = kwargs.get(
-            'poke_interval', poke_interval.total_seconds())
-        kwargs['timeout'] = kwargs.get('timeout', timeout.total_seconds())
+            'poke_interval', _poke_interval.total_seconds())
+        kwargs['timeout'] = kwargs.get('timeout', _timeout.total_seconds())
         super().__init__(*args, **kwargs)
         self.max_requests = max_requests
         self.xcom_tasks_key = xcom_tasks_key
