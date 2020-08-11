@@ -19,6 +19,7 @@ Sample:
 [ergo]
 request_queue_url = $REQUEST_SQS_QUEUE
 result_queue_url = $RESULT_SQS_QUEUE
+queue_wait_threshold_mins = 3
 ```
 
 Explanation:
@@ -26,3 +27,4 @@ Explanation:
 - `request_queue_url` - SQS queue url used for ergo task requests, i.e. airflow is producer
 - `result_queue_url` - SQS queue url used for ergo task results, i.e. airflow is consumer
 - `max_task_requests` - Maximum number of ergo requests to batch before sending to SQS (default 10)
+- `queue_wait_threshold_mins` - Wait Threshold (in mins) for task, with respect to execution time, before prioritizing push to SQS
