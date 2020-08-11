@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from airflow import DAG
-from airflow.configuration import conf
 from airflow.utils import timezone
 from airflow.utils.dates import days_ago
 
