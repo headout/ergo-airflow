@@ -49,13 +49,8 @@ class TaskRequestBatchSensor(BaseSensorOperator):
         if len(result) < self.max_requests and urgent_task_idx is None and context['ti'].is_eligible_to_retry():
             return False
         elif result:
-            # Find unique tasks so sqs doesn't get duplicates
-            unique_result = list({
-                f'{task.task_id}{task.request_data if task.request_data else ""}': task
-                for task in result
-            }.values())
-            self.log.info('Unique results to push: %s', str(unique_result))
-            self.xcom_push(context, self.xcom_tasks_key, unique_result)
+            self.log.info('Found %d tasks, with %d urgent tasks', len(result), (urgent_task_idx or 0) + 1)
+            self.xcom_push(context, self.xcom_tasks_key, result)
             return True
         else:
             return False
