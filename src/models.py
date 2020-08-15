@@ -112,6 +112,8 @@ def _get_ergo_job(ti):
 TaskInstance.ergo_task = property(lambda self: str(_get_ergo_task(self)))
 TaskInstance.ergo_task_status = property(
     lambda self: getattr(_get_ergo_task(self), 'state', None))
-TaskInstance.ergo_job = property(lambda self: str(_get_ergo_job(self)))
+TaskInstance.ergo_job_id = property(
+    lambda self: str(getattr(_get_ergo_job(self), 'id', None)))
+TaskInstance.ergo_job_status = property(lambda self: str(_get_ergo_job(self)))
 TaskInstance.ergo_job_response_at = property(
     lambda self: getattr(_get_ergo_job(self), 'response_at', None))
