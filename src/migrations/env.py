@@ -1,3 +1,4 @@
+from ergo.models import Base
 import os
 import sys
 from logging.config import fileConfig
@@ -6,10 +7,10 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 PACKAGE_PARENT = '../..'
-SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+SCRIPT_DIR = os.path.dirname(os.path.realpath(
+    os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
-from ergo.models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -31,6 +32,17 @@ target_metadata = Base.metadata
 # ... etc.
 
 
+# https://alembic.sqlalchemy.org/en/latest/cookbook.html#don-t-generate-any-drop-table-directives-with-autogenerate
+def include_object(object, name, type_, reflected, compare_to):
+    """Don’t generate any DROP TABLE directives with autogenerate
+
+    """
+    if type_ == "table" and reflected and compare_to is None:
+        return False
+    else:
+        return True
+
+
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
 
@@ -49,6 +61,8 @@ def run_migrations_offline():
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_object,
+        version_table='ergo__alembic_version'
     )
 
     with context.begin_transaction():
@@ -70,7 +84,9 @@ def run_migrations_online():
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, target_metadata=target_metadata,
+            include_object=include_object,
+            version_table='ergo__alembic_version'
         )
 
         with context.begin_transaction():
