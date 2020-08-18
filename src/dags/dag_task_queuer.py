@@ -9,6 +9,7 @@ from ergo.operators.sqs.sqs_task_pusher import SqsTaskPusherOperator
 from ergo.sensors.task_requests_batcher import TaskRequestBatchSensor
 
 XCOM_REQUEST_TASK_KEY = "request.tasks"
+XCOM_REQUEST_SQS_QUEUE_URL = "request.sqs_url"
 TASK_ID_REQUEST_SENSOR = "collect_requests"
 
 default_args = {
@@ -20,7 +21,6 @@ default_args = {
 }
 
 max_requests = Config.max_requests
-sqs_queue_url = Config.sqs_request_queue_url
 
 with DAG(
     'ergo_task_queuer',
@@ -34,6 +34,7 @@ with DAG(
         task_id=TASK_ID_REQUEST_SENSOR,
         max_requests=max_requests,
         xcom_tasks_key=XCOM_REQUEST_TASK_KEY,
+        xcom_sqs_queue_url_key=XCOM_REQUEST_SQS_QUEUE_URL,
         poke_interval=timedelta(minutes=2).total_seconds(),
         timeout=timedelta(minutes=10).total_seconds()
     )
@@ -42,7 +43,7 @@ with DAG(
         task_id="push_tasks",
         task_id_collector=TASK_ID_REQUEST_SENSOR,
         xcom_tasks_key=XCOM_REQUEST_TASK_KEY,
-        sqs_queue_url=sqs_queue_url
+        xcom_sqs_queue_url_key=XCOM_REQUEST_SQS_QUEUE_URL,
     )
 
 collector >> pusher

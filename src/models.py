@@ -54,12 +54,13 @@ class ErgoTask(Base):
     def __str__(self):
         return f'#{self.id}: {self.task_id}'
 
-    def __init__(self, task_id, ti, request_data=''):
+    def __init__(self, task_id, ti, queue_url, request_data=''):
         self.task_id = task_id
         self.ti_task_id = ti.task_id
         self.ti_dag_id = ti.dag_id
         self.ti_execution_date = ti.execution_date
         self.request_data = request_data
+        self.queue_url = queue_url
 
 
 class ErgoJob(Base):
@@ -111,6 +112,8 @@ def _get_ergo_job(ti):
 
 
 TaskInstance.ergo_task = property(lambda self: str(_get_ergo_task(self)))
+TaskInstance.ergo_task_queue_url = property(
+    lambda self: getattr(_get_ergo_task(self), 'queue_url', None))
 TaskInstance.ergo_task_status = property(
     lambda self: getattr(_get_ergo_task(self), 'state', None))
 TaskInstance.ergo_job_id = property(
