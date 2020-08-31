@@ -1,9 +1,12 @@
+import logging
 from functools import wraps
 
 from airflow.utils import db
 from airflow.utils.state import State
 
 SECTION_NAME = "ergo"
+
+logger = logging.getLogger(__name__)
 
 
 class JobResultStatus(object):
@@ -29,7 +32,10 @@ def ergo_initdb(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        func(*args, **kwargs)
+        try:
+            func(*args, **kwargs)
+        except Exception as e:
+            logger.warning('Ignoring error', exc_info=e)
         initdb()
 
     wrapper._wrappers = list(prev_wrappers) + list(SECTION_NAME)
