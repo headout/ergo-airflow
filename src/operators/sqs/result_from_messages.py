@@ -46,6 +46,10 @@ class JobResultFromMessagesOperator(BaseOperator):
             job.result_code = result['metadata']['status']
             job.result_data = json.dumps(result['data'])
             job.error_msg = result['metadata'].get('error', None)
+            if job.error_msg is not None:
+                # ensure the saved error message is decoded into latin-1
+                # so it is mysql DB compliant text
+                job.error_msg = str(job.error_msg).encode('latin1', 'ignore').decode()
             job.response_at = timezone.utcnow()
             task = job.task
             task.state = JobResultStatus.task_state(job.result_code)
