@@ -13,11 +13,13 @@ class ErgoJobResultSensor(BaseSensorOperator):
     def __init__(
         self,
         pusher_task_id: str,
+        wait_for_state = State.finished(),
         *args,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.pusher_task_id = pusher_task_id
+        self.wait_for_state = wait_for_state
 
     @provide_session
     def _get_ergo_task(self, ti, session=None):
@@ -32,10 +34,13 @@ class ErgoJobResultSensor(BaseSensorOperator):
         task = self._get_ergo_task(ti)
         self.log.info('Received task - %s... STATE: %s', str(task), task.state)
         job = task.job
-        if job is None or task.state in State.unfinished():
-            return False
-        self.log.info('Job - (%s) executed at %s',
-                      str(job), str(job.response_at))
+        if job is not None:
+            self.log.info('Job - (%s)' + (f'responded back at {job.response_at}' if job.response_at else ''), str(job))
+        else:
+            self.log.info('Waiting for task "%s" to be queued...', str(task))
+        wait_for_state = self.wait_for_state
+        if not isinstance(wait_for_state, (list, tuple)):
+            wait_for_state = (wait_for_state,)
         if task.state == State.FAILED:
             raise ErgoFailedResultException(job.result_code, job.error_msg)
-        return True
+        return task.state in wait_for_state
