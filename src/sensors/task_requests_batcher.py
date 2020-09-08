@@ -83,14 +83,15 @@ class TaskRequestBatchSensor(BaseSensorOperator):
 
     @provide_session
     def choose_queue(self, session=None):
-        wait_second = self.urgent_task_wait_threshold.seconds
+        wait_second = self.urgent_task_wait_threshold.total_seconds()
         col_count_group = func.count(ErgoTask.queue_url)
         col_min_execution_date = func.min(ErgoTask.ti_execution_date)
         dialect = session.bind.dialect.name
         self.log.debug(f'using dialect: {dialect}')
         if dialect == 'postgresql':
             col_is_urgent_task = (
-                (func.EXTRACT(text('EPOCH'), func.now()) - func.EXTRACT(text('EPOCH'), col_min_execution_date))
+                (func.EXTRACT(text('EPOCH'), func.now()) -
+                 func.EXTRACT(text('EPOCH'), col_min_execution_date))
                 >= wait_second
             )
         else:
