@@ -111,7 +111,12 @@ class ErgoJob(Base):
             if e.msg == 'Expecting property name enclosed in double quotes':
                 logger.warning(
                     'DEPRECATED use of single quotes in error metadata.\nFixing the dumped string for backwards compatibility.')
-                return json.loads(raw_str.replace("\'", "\""))
+                try:
+                    return json.loads(raw_str.replace("\'", "\""))
+                except Exception as e:
+                    logger.exception(
+                        'Failed parsing error message', exc_info=e)
+                    return None
             logger.exception('Failed parsing error message', exc_info=e)
             return None
         except Exception as e:
@@ -120,10 +125,10 @@ class ErgoJob(Base):
 
     @cached_property
     def error_msg(self):
-        return self._error_metadata['message'] if self._error_metadata else None
+        return self._error_metadata['message'] if self._error_metadata else self._error_msg
 
     @cached_property
     def error_stacktrace(self):
-        if not self._error_msg:
+        if not self._error_metadata:
             return None
         return self._error_metadata['traceback']
