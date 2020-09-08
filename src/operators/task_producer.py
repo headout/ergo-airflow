@@ -7,11 +7,14 @@ from airflow.utils.db import provide_session
 from airflow.utils.decorators import apply_defaults
 
 from ergo.config import Config
+from ergo.links.ergo_task_detail import ErgoTaskDetailLink
 from ergo.models import ErgoTask
 
 
 class ErgoTaskProducerOperator(BaseOperator):
     template_fields = ['ergo_task_id', 'ergo_task_data']
+
+    operator_extra_links = (ErgoTaskDetailLink(),)
 
     @apply_defaults
     def __init__(
