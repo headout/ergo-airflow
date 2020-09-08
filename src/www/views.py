@@ -4,6 +4,7 @@ from functools import wraps
 import airflow
 import pendulum
 from airflow.utils.db import provide_session
+from airflow.www_rbac import utils as airflowutils
 from flask import request
 from flask_appbuilder import BaseView, expose, has_access
 from sqlalchemy.orm import joinedload
@@ -45,8 +46,26 @@ class ErgoView(BaseView):
             .options(joinedload('job'))
             .filter_by(ti_task_id=task_id, ti_dag_id=dag_id, ti_execution_date=execution_date)
         ).one()
+        job = task.job
+
+        req_attrs = {}
+        for attr_name in dir(task):
+            if not attr_name.startswith('_'):
+                attr = getattr(task, attr_name)
+                req_attrs[attr_name] = str(attr)
+
+        res_attrs = {}
+        for attr_name in dir(job):
+            if not attr_name.startswith('_'):
+                attr = getattr(job, attr_name)
+                res_attrs[attr_name] = str(attr)
+
         return self.render_template(
             'ergo/task_detail.html',
             task=task,
-            job=task.job
+            job=job,
+            execution_date=execution_date.isoformat(),
+            req_attrs=req_attrs,
+            res_attrs=res_attrs,
+            state_token=airflowutils.state_token(task.state)
         )

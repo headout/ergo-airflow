@@ -1,7 +1,67 @@
-{% extends base_template %}
-{% block page_title %}Ergo Task Detail - {{ task }}
-{% endblock %}
-{% block content %}
-{{ task }}
-{{ job }}
+{% extends base_template %} {% block page_title %}Ergo Task Detail - {{ task }}
+{% endblock %} {% block content %}
+<h2 class="pull-left">
+  <span style="color: #aaa" data-original-title="" title="">Ergo Task ID:</span>
+  <span data-original-title="" title="">{{ task.task_id }}</span>
+</h2>
+<div class="clearfix"></div>
+<h4>
+  {{ state_token }}
+
+  <form method="get" id="daform" action="#">
+    <input type="hidden" name="dag_id" value="{{ task.ti_dag_id }}" />
+
+    <div class="form-inline">
+      <span style="color: #aaa" data-original-title="" title=""
+        >Task Instance:
+      </span>
+      <span data-original-title="" title="">
+        {{ task.ti_task_id }}
+        <input type="hidden" value="{{ task.ti_task_id }}" name="task_id" />
+      </span>
+      <div class="input-group datetime datetimepicker">
+        <span class="input-group-addon" data-original-title="" title=""
+          ><i class="fa fa-calendar cursor-hand"></i></span
+        ><input
+          class="form-control"
+          id="execution_date"
+          name="execution_date"
+          type="text"
+          value="{{ execution_date }}"
+        />
+      </div>
+    </div>
+  </form>
+</h4>
+
+<div>
+  <h4>Request Details</h4>
+  <table class="table table-striped table-bordered">
+    <tr>
+      <th>Attribute</th>
+      <th>Value</th>
+    </tr>
+    {% for attr, value in req_attrs.items() %}
+    <tr>
+      <td>{{ attr }}</td>
+      <td class="code">{{ value|replace('\n', '<br />'|safe) }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% if job %}
+  <h4>Response Details</h4>
+  <table class="table table-striped table-bordered">
+    <tr>
+      <th>Attribute</th>
+      <th>Value</th>
+    </tr>
+    {% for attr, value in res_attrs.items() %}
+    <tr>
+      <td>{{ attr }}</td>
+      <td class="code">{{ value|replace('\n', '<br />'|safe) }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</div>
 {% endblock %}

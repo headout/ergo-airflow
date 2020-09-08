@@ -27,7 +27,8 @@ class JobResultFromMessagesOperator(BaseOperator):
     @provide_session
     def execute(self, context, session=None):
         ti = context['ti']
-        messages = self.xcom_pull(context, self.sensor_task_id, key=self.xcom_msg_key)['Messages']
+        messages = self.xcom_pull(
+            context, self.sensor_task_id, key=self.xcom_msg_key)['Messages']
         self.log.info('Got %d messages...', len(messages))
         results = [
             json.loads(msg['Body'])
@@ -45,11 +46,16 @@ class JobResultFromMessagesOperator(BaseOperator):
             self.log.info('Processing result %s', str(result))
             job.result_code = result['metadata']['status']
             job.result_data = json.dumps(result['data'])
-            job.error_msg = result['metadata'].get('error', None)
-            if job.error_msg is not None:
+            job._error_msg = result['metadata'].get('error', None)
+            if job._error_msg is not None:
                 # ensure the saved error message is decoded into latin-1
                 # so it is mysql DB compliant text
-                job.error_msg = str(job.error_msg).encode('latin1', 'ignore').decode()
+                try:
+                    job._error_msg = json.dumps(job._error_msg)
+                except Exception:
+                    job._error_msg = str(job._error_msg)
+                job._error_msg = job._error_msg.encode(
+                    'latin1', 'ignore').decode()
             job.response_at = timezone.utcnow()
             task = job.task
             task.state = JobResultStatus.task_state(job.result_code)

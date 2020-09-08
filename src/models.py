@@ -1,4 +1,7 @@
+import json
+import logging
 from datetime import datetime
+from functools import cached_property
 
 from airflow.models import TaskInstance
 from airflow.models.base import ID_LEN
@@ -14,6 +17,8 @@ from sqlalchemy.orm import joinedload, relationship
 from ergo import JobResultStatus
 
 Base = declarative_base()
+
+logger = logging.getLogger(__name__)
 
 
 class ErgoTask(Base):
@@ -76,7 +81,7 @@ class ErgoJob(Base):
     result_data = Column(Text, nullable=True)
     result_code = Column(Integer, default=JobResultStatus.NONE,
                          nullable=False)  # enum{JobResultStatus}
-    error_msg = Column(Text, nullable=True)
+    _error_msg = Column('error_msg', Text, nullable=True)
 
     created_at = Column(
         UtcDateTime, index=True, default=timezone.utcnow, nullable=False
@@ -95,29 +100,30 @@ class ErgoJob(Base):
             # TODO: Parse result and fill
             pass
 
-#### TaskInstance extensions ####
+    @cached_property
+    def _error_metadata(self):
+        if not self._error_msg:
+            return None
+        raw_str = self._error_msg
+        try:
+            return json.loads(raw_str)
+        except json.JSONDecodeError as e:
+            if e.msg == 'Expecting property name enclosed in double quotes':
+                logger.warning(
+                    'DEPRECATED use of single quotes in error metadata.\nFixing the dumped string for backwards compatibility.')
+                return json.loads(raw_str.replace("\'", "\""))
+            logger.exception('Failed parsing error message', exc_info=e)
+            return None
+        except Exception as e:
+            logger.exception('Failed parsing error message', exc_info=e)
+            return None
 
+    @cached_property
+    def error_msg(self):
+        return self._error_metadata['message'] if self._error_metadata else None
 
-@provide_session
-def _get_ergo_task(ti, session=None):
-    return (
-        session.query(ErgoTask)
-        .options(joinedload('job'))
-        .filter_by(ti_task_id=ti.task_id, ti_dag_id=ti.dag_id, ti_execution_date=ti.execution_date)
-    ).one_or_none()
-
-
-def _get_ergo_job(ti):
-    return getattr(_get_ergo_task(ti), 'job', None)
-
-
-TaskInstance.ergo_task = property(lambda self: str(_get_ergo_task(self)))
-TaskInstance.ergo_task_queue_url = property(
-    lambda self: getattr(_get_ergo_task(self), 'queue_url', None))
-TaskInstance.ergo_task_status = property(
-    lambda self: getattr(_get_ergo_task(self), 'state', None))
-TaskInstance.ergo_job_id = property(
-    lambda self: str(getattr(_get_ergo_job(self), 'id', None)))
-TaskInstance.ergo_job_status = property(lambda self: str(_get_ergo_job(self)))
-TaskInstance.ergo_job_response_at = property(
-    lambda self: getattr(_get_ergo_job(self), 'response_at', None))
+    @cached_property
+    def error_stacktrace(self):
+        if not self._error_msg:
+            return None
+        return self._error_metadata['traceback']

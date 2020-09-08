@@ -13,7 +13,7 @@ class ErgoJobResultSensor(BaseSensorOperator):
     def __init__(
         self,
         pusher_task_id: str,
-        wait_for_state = State.finished(),
+        wait_for_state=State.finished(),
         *args,
         **kwargs
     ):
@@ -35,7 +35,8 @@ class ErgoJobResultSensor(BaseSensorOperator):
         self.log.info('Received task - %s... STATE: %s', str(task), task.state)
         job = task.job
         if job is not None:
-            self.log.info('Job - (%s)' + (f'responded back at {job.response_at}' if job.response_at else ''), str(job))
+            self.log.info(
+                'Job - (%s)' + (f'responded back at {job.response_at}' if job.response_at else ''), str(job))
         else:
             self.log.info('Waiting for task "%s" to be queued...', str(task))
         wait_for_state = self.wait_for_state
