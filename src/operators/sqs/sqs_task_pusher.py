@@ -48,10 +48,11 @@ class SqsTaskPusherOperator(BaseOperator):
                 QueueUrl=queue_url,
                 Entries=entries
             )
-        except Exception:
-            self.log.error(
-                'SQS Send message API failed for "%s" queue!', queue_url)
-            self.log.error('Request Entries: %s', str(entries))
+        except Exception as e:
+            self.log.exception(
+                'SQS Send message API failed for "%s" queue!\nRequest Entries: %', queue_url, str(entries),
+                exc_info=e
+            )
 
             self.log.info("Setting the tasks up for reschedule!")
             self._set_task_states(
