@@ -1,6 +1,6 @@
 import json
 
-from airflow.operators import BaseOperator
+from airflow.models import BaseOperator
 from airflow.utils import timezone
 from airflow.utils.db import provide_session
 from airflow.utils.decorators import apply_defaults

@@ -2,7 +2,7 @@ import json
 from typing import Union
 
 from airflow.contrib.hooks.aws_sqs_hook import SQSHook
-from airflow.operators import BaseOperator
+from airflow.models import BaseOperator
 from airflow.utils.db import provide_session
 from airflow.utils.decorators import apply_defaults
 

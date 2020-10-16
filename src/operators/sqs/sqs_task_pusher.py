@@ -1,5 +1,5 @@
 from airflow.contrib.hooks.aws_sqs_hook import SQSHook
-from airflow.operators import BaseOperator
+from airflow.models import BaseOperator
 from airflow.utils.db import provide_session
 from airflow.utils.decorators import apply_defaults
 from airflow.utils.state import State
@@ -50,7 +50,8 @@ class SqsTaskPusherOperator(BaseOperator):
             )
         except Exception as e:
             self.log.exception(
-                'SQS Send message API failed for "%s" queue!\nRequest Entries: %', queue_url, str(entries),
+                'SQS Send message API failed for "%s" queue!\nRequest Entries: %', queue_url, str(
+                    entries),
                 exc_info=e
             )
 
