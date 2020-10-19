@@ -43,4 +43,4 @@ def ergo_initdb(func):
     return wrapper
 
 
-db.initdb = ergo_initdb(db.initdb)
+db.upgradedb = ergo_initdb(db.upgradedb)
