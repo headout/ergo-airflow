@@ -13,7 +13,7 @@ class ErgoJobResultSensor(BaseSensorOperator):
     def __init__(
         self,
         pusher_task_id: str,
-        wait_for_state=State.finished(),
+        wait_for_state=list(State.finished),
         *args,
         **kwargs
     ):
@@ -21,7 +21,7 @@ class ErgoJobResultSensor(BaseSensorOperator):
         self.pusher_task_id = pusher_task_id
         if not isinstance(wait_for_state, (list, tuple)):
             wait_for_state = (wait_for_state,)
-        self.wait_for_state = State.finished()
+        self.wait_for_state = list(State.finished)
         if self.wait_for_state != wait_for_state:
             self.wait_for_state.extend(wait_for_state)
 
