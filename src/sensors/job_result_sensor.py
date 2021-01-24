@@ -23,6 +23,7 @@ class ErgoJobResultSensor(BaseSensorOperator):
         # HACK: In Airflow V2, for smart sensor, added 'ti' info in context but
         # it shouldn't be passed to super constructor
         kwargs.pop('ti_dict', None)
+        kwargs['retries'] = 0
         super().__init__(*args, **kwargs)
         self.pusher_task_id = pusher_task_id
         if not isinstance(wait_for_state, (list, tuple)):
