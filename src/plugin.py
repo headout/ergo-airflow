@@ -13,8 +13,6 @@ from flask import Blueprint
 
 ab_ergo_view = ErgoView()
 ab_ergo_package = {
-    'name': 'Ergo Tasks',
-    'category': 'Ergo',
     'view': ab_ergo_view
 }
 

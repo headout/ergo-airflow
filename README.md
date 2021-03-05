@@ -5,6 +5,10 @@
 - Clone the repository.
 - Link src/ directory as a new plugin in <AIRFLOW_HOME>/plugins.
 
+## Compatibility
+
+Apache Airflow 2.0.1+
+
 ## Usage
 
 - **IMPORTANT!** Add a dummy DAG in your DAGs folder (<AIRFLOW_HOME>/dags) to load required Ergo DAGs. You can use [this script](sample/dags/dag_ergo.py).
