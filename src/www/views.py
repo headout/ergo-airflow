@@ -4,7 +4,11 @@ from functools import wraps
 import airflow
 import pendulum
 from airflow.utils.db import provide_session
-from airflow.www_rbac import utils as airflowutils
+try:
+    from airflow.www_rbac import utils as airflowutils
+except ImportError:
+    # Airflow 2.0.0
+    from airflow.www import utils as airflowutils
 from flask import request
 from flask_appbuilder import BaseView, expose, has_access
 from sqlalchemy.orm import joinedload

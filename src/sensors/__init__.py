@@ -1,0 +1,1 @@
+from .job_result_sensor import ErgoJobResultSensor
