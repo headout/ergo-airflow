@@ -103,7 +103,9 @@ class TaskRequestBatchSensor(BaseSensorOperator):
             ).filter(self.filter_ergo_task).group_by(ErgoTask.queue_url)
             .order_by(col_is_urgent_task.desc(), col_count_group.desc())
         )
+        self.log.info(f'Finding queue with: {valid_queues}')
         queue = valid_queues.first()
+        self.log.info(f'Found target queue: {queue}')
         return queue.queue_url if queue else None
 
     @provide_session
