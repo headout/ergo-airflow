@@ -36,7 +36,6 @@ class TaskRequestBatchSensor(BaseSensorOperator):
     def __init__(
         self,
         max_requests: int,
-        xcom_tasks_key: str,
         xcom_sqs_queue_url_key: str,
         *args,
         **kwargs
@@ -49,40 +48,25 @@ class TaskRequestBatchSensor(BaseSensorOperator):
         kwargs['timeout'] = kwargs.get('timeout', _timeout.total_seconds())
         super().__init__(*args, **kwargs)
         self.max_requests = max_requests
-        self.xcom_tasks_key = xcom_tasks_key
         self.xcom_sqs_queue_url_key = xcom_sqs_queue_url_key
         self.urgent_task_wait_threshold = Config.queue_wait_threshold
 
     def poke(self, context):
         now = timezone.utcnow()
-        self.log.info('Querying for %s tasks...', State.QUEUED)
-        queue_url = self.choose_queue()
-        if not queue_url:
+        self.log.info('Querying for %s tasks...', State.SCHEDULED)
+        queue = self.choose_queue()
+        if not queue:
             self.log.info('No task is pending to be queued!')
             return False
-        result = list(self.collect_tasks(queue_url))
-        urgent_task_idx = -1
-        for idx, task in enumerate(result):
-            if now - task.ti_execution_date > self.urgent_task_wait_threshold:
-                urgent_task_idx = idx
-            else:
-                break
-
-        self.log.info('Query result: %s', ", ".join(
-            map(lambda res: str(res), result)))
-        if len(result) < self.max_requests and urgent_task_idx == -1 and context['ti'].is_eligible_to_retry():
+        queue_url, cnt_tasks, is_urgent = queue[0], queue[1], queue[2]
+        if cnt_tasks < self.max_requests and not is_urgent and context['ti'].is_eligible_to_retry():
             return False
-        elif result:
-            self.log.info('Found %d tasks, with %d urgent tasks',
-                          len(result), urgent_task_idx + 1)
-            self.xcom_push(context, self.xcom_tasks_key, result)
-            self.xcom_push(context, self.xcom_sqs_queue_url_key, queue_url)
-            return True
-        else:
-            return False
+        self.log.info('Found %d tasks', cnt_tasks)
+        self.xcom_push(context, self.xcom_sqs_queue_url_key, queue_url)
+        return True
 
     @provide_session
-    def choose_queue(self, session=None):
+    def choose_queue(self, session=None) -> tuple:
         wait_second = self.urgent_task_wait_threshold.total_seconds()
         col_count_group = func.count(ErgoTask.queue_url)
         col_min_execution_date = func.min(ErgoTask.ti_execution_date)
@@ -111,12 +95,4 @@ class TaskRequestBatchSensor(BaseSensorOperator):
         self.log.info(f'Finding queue with: {valid_queues}')
         queue = valid_queues.first()
         self.log.info(f'Found target queue: {queue}')
-        return queue.queue_url if queue else None
-
-    @provide_session
-    def collect_tasks(self, queue_url, session=None):
-        return (
-            session.query(ErgoTask)
-            .filter(self.filter_ergo_task, ErgoTask.queue_url == queue_url)
-            .order_by(ErgoTask.ti_execution_date)
-        ).limit(self.max_requests)
+        return queue

@@ -25,9 +25,9 @@ with DAG(
     'ergo_job_collector',
     default_args=default_args,
     is_paused_upon_creation=False,
-    schedule_interval=timedelta(seconds=10),
+    schedule_interval=timedelta(seconds=30),
     catchup=False,
-    max_active_runs=1
+    max_active_runs=4
 ) as dag:
     sqs_collector = SQSSensor(
         task_id=TASK_ID_SQS_COLLECTOR,

@@ -22,18 +22,19 @@ default_args = {
 
 max_requests = Config.max_requests
 
+max_concurrent_runs = 4
+
 with DAG(
     'ergo_task_queuer',
     default_args=default_args,
     is_paused_upon_creation=False,
-    schedule_interval=timedelta(seconds=10),
+    schedule_interval=timedelta(seconds=30),
     catchup=False,
-    max_active_runs=1
+    max_active_runs=max_concurrent_runs
 ) as dag:
     collector = TaskRequestBatchSensor(
         task_id=TASK_ID_REQUEST_SENSOR,
         max_requests=max_requests,
-        xcom_tasks_key=XCOM_REQUEST_TASK_KEY,
         xcom_sqs_queue_url_key=XCOM_REQUEST_SQS_QUEUE_URL,
         poke_interval=timedelta(minutes=2).total_seconds(),
         timeout=timedelta(minutes=10).total_seconds()
@@ -42,8 +43,9 @@ with DAG(
     pusher = SqsTaskPusherOperator(
         task_id="push_tasks",
         task_id_collector=TASK_ID_REQUEST_SENSOR,
-        xcom_tasks_key=XCOM_REQUEST_TASK_KEY,
+        max_requests=max_requests,
         xcom_sqs_queue_url_key=XCOM_REQUEST_SQS_QUEUE_URL,
+        use_row_lock=(max_concurrent_runs > 1)
     )
 
 collector >> pusher
