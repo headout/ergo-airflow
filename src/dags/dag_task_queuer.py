@@ -22,7 +22,7 @@ default_args = {
 
 max_requests = Config.max_requests
 
-max_concurrent_runs = 4
+max_concurrent_runs = Config.max_runs_dag_task_queuer
 
 with DAG(
     'ergo_task_queuer',
