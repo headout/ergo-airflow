@@ -21,14 +21,40 @@ Sample:
 
 ```ini
 [ergo]
+# Max number of tasks to queue at one time via SQS. `TaskRequestBatchSensor` will either wait
+# for urgent condition (defined by the threshold below) or if any target queue has more number
+# of scheduled tasks than the value of `max_task_requests`.
+# AWS Batch SQS API supports a maximum of 10 messages at a time.
+# Default: 10
+max_task_requests = 10
+
+# Fallback SQS queue URL to send task requests to be processed. Messages are sent to this queue
+# with `task_id` as the `MessageGroupId` and `request_data` as the `MessageBody`.
+# In most production setups, there will be more than 1 queue to manage and these can
+# be set per DAG via the `ergo_task_sqs_queue_url` argument of `ErgoTaskProducerOperator`.
+# So the value set here in config is a fallback in case queue URL isn't provided to the operator.
+# Required.
 request_queue_url = $REQUEST_SQS_QUEUE
+
+# SQS queue URL to listen to for task results. Messages are received from this queue assuming
+# `Body` contains the needed `metadata` and `jobId` (usually set automatically by the Ergo clients).
+# Ergo is configured to listen to only one result queue per Airflow instance.
+# This can be later adapted to support multiple queues.
+# Required.
 result_queue_url = $RESULT_SQS_QUEUE
+
+# Threshold time (in minutes) to wait for all scheduled task requests before they are considered
+# "urgent". Task requests are only dispatched in batches if there's atleast one urgent task for any
+# queue.
+# Default: 3
 queue_wait_threshold_mins = 3
+
+# Equivalent to `max_active_runs` of `ergo_task_queuer` DAG. Increases parallelism if there usually
+# are more than 10 scheduled tasks at any time.
+# Default: 1
+max_runs_dag_task_queuer = 3
+
+# Equivalent to `max_active_runs` of `ergo_job_collector` DAG.
+# Default: 1
+max_runs_dag_job_collector = 3
 ```
-
-Explanation:
-
-- `request_queue_url` - SQS queue url used for ergo task requests, i.e. airflow is producer
-- `result_queue_url` - SQS queue url used for ergo task results, i.e. airflow is consumer
-- `max_task_requests` - Maximum number of ergo requests to batch before sending to SQS (default 10)
-- `queue_wait_threshold_mins` - Wait Threshold (in mins) for task, with respect to execution time, before prioritizing push to SQS
