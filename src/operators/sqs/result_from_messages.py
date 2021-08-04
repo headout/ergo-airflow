@@ -45,7 +45,7 @@ class JobResultFromMessagesOperator(BaseOperator):
         for result, job in zip(results, jobs):
             self.log.info('Processing result %s', str(result))
             job.result_code = result['metadata']['status']
-            job.result_data = json.dumps(result['data'])
+            job.result_data = json.dumps(result['data']) if 'data' in result else None
             job._error_msg = result['metadata'].get('error', None)
             if job._error_msg is not None:
                 # ensure the saved error message is decoded into latin-1
