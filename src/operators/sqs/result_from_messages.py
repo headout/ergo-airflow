@@ -28,7 +28,7 @@ class JobResultFromMessagesOperator(BaseOperator):
     def execute(self, context, session=None):
         ti = context['ti']
         messages = self.xcom_pull(
-            context, self.sensor_task_id, key=self.xcom_msg_key)['Messages']
+            context, self.sensor_task_id, key=self.xcom_msg_key)
         self.log.info('Got %d messages...', len(messages))
         results = [
             json.loads(msg['Body'])
