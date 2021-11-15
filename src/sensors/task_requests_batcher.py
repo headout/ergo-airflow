@@ -69,7 +69,6 @@ class TaskRequestBatchSensor(BaseSensorOperator):
     def choose_queue(self, session=None) -> tuple:
         wait_second = self.urgent_task_wait_threshold.total_seconds()
         col_count_group = func.count(ErgoTask.queue_url)
-        col_min_execution_date = func.min(ErgoTask.ti_execution_date)
         col_min_created = func.min(ErgoTask.created_at)
         dialect = session.bind.dialect.name
         self.log.debug(f'using dialect: {dialect}')
@@ -88,9 +87,9 @@ class TaskRequestBatchSensor(BaseSensorOperator):
         # and finally the number of tasks pending for that queue
         valid_queues = (
             session.query(
-                ErgoTask.queue_url, col_count_group, col_is_urgent_task, col_min_execution_date
+                ErgoTask.queue_url, col_count_group, col_is_urgent_task
             ).filter(self.filter_ergo_task).group_by(ErgoTask.queue_url)
-            .order_by(col_is_urgent_task.desc(), col_min_execution_date, col_count_group.desc())
+            .order_by(col_is_urgent_task.desc(), col_count_group.desc())
         )
         self.log.info(f'Finding queue with: {valid_queues}')
         queue = valid_queues.first()

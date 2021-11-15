@@ -3,17 +3,14 @@ from functools import wraps
 
 import airflow
 import pendulum
+from airflow.exceptions import DagRunNotFound
+from airflow.models.dagrun import DagRun
 from airflow.utils.db import provide_session
-try:
-    from airflow.www_rbac import utils as airflowutils
-except ImportError:
-    # Airflow 2.0.0
-    from airflow.www import utils as airflowutils
+from airflow.www import utils as airflowutils
+from ergo.models import ErgoTask
 from flask import request
 from flask_appbuilder import BaseView, expose, has_access
 from sqlalchemy.orm import joinedload
-
-from ergo.models import ErgoTask
 
 
 def login_required(func):
@@ -45,10 +42,19 @@ class ErgoView(BaseView):
         execution_date = request.args.get('ti_execution_date')
         if execution_date:
             execution_date = pendulum.parse(execution_date)
+        run_id = (
+            session.query(DagRun.run_id)
+            .filter_by(dag_id=dag_id, execution_date=execution_date)
+            .scalar()
+        )
+        if not run_id:
+            raise DagRunNotFound(
+                f"DagRun for {self.dag_id!r} with date {execution_date} not found"
+            ) from None
         task = (
             session.query(ErgoTask)
             .options(joinedload('job'))
-            .filter_by(ti_task_id=task_id, ti_dag_id=dag_id, ti_execution_date=execution_date)
+            .filter_by(ti_task_id=task_id, ti_dag_id=dag_id, ti_run_id=run_id)
         ).one()
         job = task.job
 

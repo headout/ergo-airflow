@@ -36,19 +36,19 @@ class ErgoTask(Base):
     )
     ti_task_id = Column(String(ID_LEN), nullable=False)
     ti_dag_id = Column(String(ID_LEN), nullable=False)
-    ti_execution_date = Column(UtcDateTime, nullable=False)
+    ti_run_id = Column(String(ID_LEN), nullable=False)
 
     job = relationship('ErgoJob', back_populates='task', uselist=False)
     # task_instance = relationship(TaskInstance, back_populates='ergo_task')
 
     __table_args__ = (
         ForeignKeyConstraint(
-            (ti_task_id, ti_dag_id, ti_execution_date),
-            ('task_instance.task_id', 'task_instance.dag_id', 'task_instance.execution_date'),
+            (ti_task_id, ti_dag_id, ti_run_id),
+            ('task_instance.task_id', 'task_instance.dag_id', 'task_instance.run_id'),
             ondelete='CASCADE'
         ),
         UniqueConstraint(
-            ti_task_id, ti_dag_id, ti_execution_date, name='ix_unique_task_instance'
+            ti_task_id, ti_dag_id, ti_run_id, name='ix_unique_task_instance'
         )
     )
 
@@ -59,7 +59,7 @@ class ErgoTask(Base):
         self.task_id = task_id
         self.ti_task_id = ti.task_id
         self.ti_dag_id = ti.dag_id
-        self.ti_execution_date = ti.execution_date
+        self.ti_run_id = ti.run_id
         self.request_data = request_data
         self.queue_url = queue_url
 

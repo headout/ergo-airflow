@@ -37,14 +37,14 @@ class ErgoJobResultSensor(BaseSensorOperator):
         return (
             session.query(ErgoTask)
             .options(joinedload('job'))
-            .filter_by(ti_task_id=self.pusher_task_id, ti_dag_id=ti_dict['dag_id'], ti_execution_date=ti_dict['execution_date'])
+            .filter_by(ti_task_id=self.pusher_task_id, ti_dag_id=ti_dict['dag_id'], ti_run_id=ti_dict['run_id'])
         ).one()
 
     def get_poke_context(self, context):
         result = super().get_poke_context(context)
         result['ti_dict'] = {
             'dag_id': context['ti'].dag_id,
-            'execution_date': context['ti'].execution_date.isoformat()
+            'run_id': context['ti'].run_id
         }
         return result
 
@@ -53,10 +53,7 @@ class ErgoJobResultSensor(BaseSensorOperator):
         if not ti_dict:
             ti = context['ti']
             ti_dict['dag_id'] = ti.dag_id
-            ti_dict['execution_date'] = ti.execution_date
-        else:
-            ti_dict['execution_date'] = datetime.fromisoformat(
-                ti_dict['execution_date'])
+            ti_dict['run_id'] = ti.run_id
         task = self._get_ergo_task(ti_dict)
         self.log.info('Received task - %s... STATE: %s', str(task), task.state)
         job = task.job
