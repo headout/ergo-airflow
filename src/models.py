@@ -1,20 +1,16 @@
 import json
 import logging
-from datetime import datetime
 from functools import cached_property
 
-from airflow.models import TaskInstance
 from airflow.models.base import ID_LEN
 from airflow.utils import timezone
-from airflow.utils.db import provide_session
 from airflow.utils.sqlalchemy import UtcDateTime
 from airflow.utils.state import State
-from sqlalchemy import (Column, ForeignKey, ForeignKeyConstraint, Index,
-                        Integer, String, Text, UniqueConstraint)
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import joinedload, relationship
-
 from ergo import JobResultStatus
+from sqlalchemy import (Column, ForeignKey, ForeignKeyConstraint, Integer,
+                        String, Text, UniqueConstraint)
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
@@ -48,7 +44,7 @@ class ErgoTask(Base):
     __table_args__ = (
         ForeignKeyConstraint(
             (ti_task_id, ti_dag_id, ti_execution_date),
-            (TaskInstance.task_id, TaskInstance.dag_id, TaskInstance.execution_date),
+            ('task_instance.task_id', 'task_instance.dag_id', 'task_instance.execution_date'),
             ondelete='CASCADE'
         ),
         UniqueConstraint(
