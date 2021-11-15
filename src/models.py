@@ -3,6 +3,7 @@ import logging
 from functools import cached_property
 
 from airflow.models.base import ID_LEN
+from airflow.models.taskinstance import TaskInstance
 from airflow.utils import timezone
 from airflow.utils.sqlalchemy import UtcDateTime
 from airflow.utils.state import State
@@ -44,7 +45,7 @@ class ErgoTask(Base):
     __table_args__ = (
         ForeignKeyConstraint(
             (ti_task_id, ti_dag_id, ti_run_id),
-            ('task_instance.task_id', 'task_instance.dag_id', 'task_instance.run_id'),
+            (TaskInstance.task_id, TaskInstance.dag_id, TaskInstance.run_id),
             ondelete='CASCADE'
         ),
         UniqueConstraint(
