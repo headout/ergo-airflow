@@ -43,11 +43,11 @@ request_queue_url = $REQUEST_SQS_QUEUE
 # Required.
 result_queue_url = $RESULT_SQS_QUEUE
 
-# Threshold time (in minutes) to wait for all scheduled task requests before they are considered
+# Threshold time (in seconds) to wait for all scheduled task requests before they are considered
 # "urgent". Task requests are only dispatched in batches if there's atleast one urgent task for any
 # queue.
-# Default: 3
-queue_wait_threshold_mins = 3
+# Default: 180
+queue_wait_threshold_secs = 180
 
 # Equivalent to `max_active_runs` of `ergo_task_queuer` DAG. Increases parallelism if there usually
 # are more than 10 scheduled tasks at any time.
