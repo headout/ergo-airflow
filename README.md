@@ -57,4 +57,12 @@ max_runs_dag_task_queuer = 3
 # Equivalent to `max_active_runs` of `ergo_job_collector` DAG.
 # Default: 1
 max_runs_dag_job_collector = 3
+
+# Poke interval for the request batcher sensor (in seconds).
+# Default: 60
+poke_interval_task_collect_secs = 60
+
+# Poke interval for the job result collector sensor (in seconds).
+# Default: 60
+poke_interval_result_collect_secs = 60
 ```

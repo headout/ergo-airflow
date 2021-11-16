@@ -23,12 +23,13 @@ default_args = {
 max_requests = Config.max_requests
 
 max_concurrent_runs = Config.max_runs_dag_task_queuer
+poke_interval_collector = Config.poke_interval_task_collector
 
 with DAG(
     'ergo_task_queuer',
     default_args=default_args,
     is_paused_upon_creation=False,
-    schedule_interval=timedelta(seconds=30),
+    schedule_interval=timedelta(seconds=10),
     catchup=False,
     max_active_runs=max_concurrent_runs
 ) as dag:
@@ -36,7 +37,7 @@ with DAG(
         task_id=TASK_ID_REQUEST_SENSOR,
         max_requests=max_requests,
         xcom_sqs_queue_url_key=XCOM_REQUEST_SQS_QUEUE_URL,
-        poke_interval=timedelta(minutes=2).total_seconds(),
+        poke_interval=poke_interval_collector,
         timeout=timedelta(minutes=10).total_seconds()
     )
 
