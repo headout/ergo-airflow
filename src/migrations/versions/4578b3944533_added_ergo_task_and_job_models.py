@@ -25,6 +25,7 @@ def upgrade():
         col_ti_execution_date_type = airflow.utils.sqlalchemy.UtcDateTime(timezone=True)
     else:
         col_ti_execution_date_type = sa.TIMESTAMP(timezone=True)
+    op.create_unique_constraint("ti_unique_task_instance", 'task_instance', ['task_id', 'dag_id'])
     op.create_table('ergo_task',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('task_id', sa.String(length=128), nullable=False),
