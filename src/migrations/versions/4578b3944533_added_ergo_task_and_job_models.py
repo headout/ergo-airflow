@@ -35,7 +35,6 @@ def upgrade():
     sa.Column('ti_task_id', sa.String(length=250), nullable=False),
     sa.Column('ti_dag_id', sa.String(length=250), nullable=False),
     sa.Column('ti_execution_date', col_ti_execution_date_type, nullable=False),
-    sa.ForeignKeyConstraint(['ti_task_id', 'ti_dag_id', 'ti_run_id'], ['task_instance.task_id', 'task_instance.dag_id', 'task_instance.run_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_ergo_task_created_at'), 'ergo_task', ['created_at'], unique=False)
