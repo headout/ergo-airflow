@@ -43,6 +43,7 @@ def upgrade():
     op.create_table('ergo_job',
     sa.Column('id', sa.String(length=128), nullable=False),
     sa.Column('task_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['task_id'], ['ergo_task.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_ergo_job_task_id'), 'ergo_job', ['task_id'], unique=True)
