@@ -20,6 +20,7 @@ default_args = {
 }
 
 sqs_queue_url = Config.sqs_result_queue_url
+selenium_sqs_queue_url =  Config.selenium_sqs_result_queue_url
 poke_interval_collector = Config.poke_interval_result_collector
 
 with DAG(
@@ -43,4 +44,26 @@ with DAG(
         sqs_sensor_task_id=TASK_ID_SQS_COLLECTOR
     )
 
+with DAG(
+        'ergo_selenium_job_collector',
+        default_args=default_args,
+        is_paused_upon_creation=False,
+        schedule_interval=timedelta(seconds=10),
+        catchup=False,
+        max_active_runs=Config.max_runs_dag_job_collector
+) as dag:
+    selenium_sqs_collector = SQSSensor(
+        task_id=TASK_ID_SQS_COLLECTOR,
+        sqs_queue=selenium_sqs_queue_url,
+        max_messages=10,
+        wait_time_seconds=10,
+        poke_interval=poke_interval_collector
+    )
+
+    selenium_result_transformer = JobResultFromMessagesOperator(
+        task_id='process_job_result',
+        sqs_sensor_task_id=TASK_ID_SQS_COLLECTOR
+    )
+
 sqs_collector >> result_transformer
+selenium_sqs_collector >> selenium_result_transformer
