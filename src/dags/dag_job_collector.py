@@ -53,7 +53,7 @@ with DAG(
         max_active_runs=Config.max_runs_dag_job_collector
 ) as dag:
     selenium_sqs_collector = SQSSensor(
-        task_id=TASK_ID_SQS_COLLECTOR,
+        task_id='collect_selenium_sqs_messages',
         sqs_queue=selenium_sqs_queue_url,
         max_messages=10,
         wait_time_seconds=10,
@@ -61,7 +61,7 @@ with DAG(
     )
 
     selenium_result_transformer = JobResultFromMessagesOperator(
-        task_id='process_job_result',
+        task_id='process_selenium_job_result',
         sqs_sensor_task_id=TASK_ID_SQS_COLLECTOR
     )
 
