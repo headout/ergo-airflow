@@ -33,7 +33,7 @@ with DAG(
         catchup=False,
         max_active_runs=max_concurrent_runs
 ) as dag:
-    collector = TaskRequestBatchSensor(
+    aries_collector = TaskRequestBatchSensor(
         task_id=TASK_ID_REQUEST_SENSOR,
         max_requests=max_requests,
         xcom_sqs_queue_url_key=XCOM_REQUEST_SQS_QUEUE_URL,
@@ -41,7 +41,7 @@ with DAG(
         timeout=timedelta(minutes=10).total_seconds()
     )
 
-    pusher = SqsTaskPusherOperator(
+    aries_pusher = SqsTaskPusherOperator(
         task_id="aries_push_tasks",
         task_id_collector=TASK_ID_REQUEST_SENSOR,
         max_requests=max_requests,
@@ -49,4 +49,4 @@ with DAG(
         use_row_lock=(max_concurrent_runs > 1)
     )
 
-collector >> pusher
+aries_collector >> aries_pusher
