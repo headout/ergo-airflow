@@ -58,8 +58,8 @@ class TaskRequestBatchSensor(BaseSensorOperator):
         if not queue:
             self.log.info('No task is pending to be queued!')
             return False
-        queue_url, cnt_tasks, is_urgent = queue[0], queue[1], queue[2]
-        if cnt_tasks < self.max_requests and not is_urgent and context['ti'].is_eligible_to_retry():
+        queue_url, cnt_tasks = queue[0], queue[1]
+        if cnt_tasks < self.max_requests and context['ti'].is_eligible_to_retry():
             return False
         self.log.info('Found %d tasks', cnt_tasks)
         self.xcom_push(context, self.xcom_sqs_queue_url_key, queue_url)
@@ -67,31 +67,17 @@ class TaskRequestBatchSensor(BaseSensorOperator):
 
     @provide_session
     def choose_queue(self, session=None) -> tuple:
-        wait_second = self.urgent_task_wait_threshold.total_seconds()
-        col_count_group = func.count(ErgoTask.queue_url)
-        col_min_created = func.min(ErgoTask.created_at)
-        dialect = session.bind.dialect.name
-        self.log.debug(f'using dialect: {dialect}')
-        if dialect == 'postgresql':
-            col_is_urgent_task = (
-                (func.EXTRACT(text('EPOCH'), func.now()) -
-                 func.EXTRACT(text('EPOCH'), col_min_created))
-                >= wait_second
-            )
-        else:
-            col_is_urgent_task = func.TIMESTAMPDIFF(
-                text('SECOND'), col_min_created, func.now()) >= wait_second
-        # order logic:
-        # first prioritize tasks that are urgent (based on scheduled date)
-        # then prioritize the tasks meant to be earlier executed
-        # and finally the number of tasks pending for that queue
-        valid_queues = (
+        if context['task'].task_id == "selenium_collect_requests":
+            queue_url = Config.selenium_request_queue_url
+        elif context['task'].task_id =="aries_collect_requests":
+            queue_url = Config.aries_sqs_request_queue_url
+        elif context['task'].task_id = "calipso_collect_requests":
+            queue_url = Config.calipso_sqs_request_queue_url
+        count = (
             session.query(
-                ErgoTask.queue_url, col_count_group, col_is_urgent_task
-            ).filter(self.filter_ergo_task).group_by(ErgoTask.queue_url)
-            .order_by(col_is_urgent_task.desc(), col_count_group.desc())
+                ErgoTask.id
+            ).filter(self.filter_ergo_task,ErgoTask.queue_url == queue_url).count()
         )
-        self.log.info(f'Finding queue with: {valid_queues}')
-        queue = valid_queues.first()
-        self.log.info(f'Found target queue: {queue}')
-        return queue
+        if count > 0:
+            return queue_url, count
+        return None
