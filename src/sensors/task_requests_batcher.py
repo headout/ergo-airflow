@@ -76,13 +76,12 @@ class TaskRequestBatchSensor(BaseSensorOperator):
             queue_url = Config.calipso_sqs_request_queue_url
         else:
             queue_url = Config.sqs_request_queue_url
+        self.log.info('Checking for scheduled tasks in %s', queue_url)
         count = (
             session.query(
                 ErgoTask.id
             ).filter(self.filter_ergo_task,ErgoTask.queue_url == queue_url).count()
         )
-        self.log.info(queue_url)
-        self.log.info(count)
         if count > 0:
             return queue_url, count
         return None
