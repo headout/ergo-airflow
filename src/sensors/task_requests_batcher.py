@@ -61,7 +61,6 @@ class TaskRequestBatchSensor(BaseSensorOperator):
             return False
         queue_url, cnt_tasks = queue[0], queue[1]
         #if cnt_tasks < self.max_requests and context['ti'].is_eligible_to_retry():
-        #    self.log.info("Cnt task are lesser")
         #    return False
         self.log.info('Found %d tasks', cnt_tasks)
         self.xcom_push(context, self.xcom_sqs_queue_url_key, queue_url)
@@ -70,7 +69,7 @@ class TaskRequestBatchSensor(BaseSensorOperator):
     @provide_session
     def choose_queue(self, task_id, session=None) -> tuple:
         if task_id == "selenium_collect_requests":
-            queue_url = Config.selenium_request_queue_url
+            queue_url = Config.selenium_sqs_request_queue_url
         elif task_id == "aries_collect_requests":
             queue_url = Config.aries_sqs_request_queue_url
         elif task_id == "calipso_collect_requests":
