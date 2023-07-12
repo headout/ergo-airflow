@@ -69,10 +69,12 @@ class TaskRequestBatchSensor(BaseSensorOperator):
     def choose_queue(self, session=None) -> tuple:
         if context['task'].task_id == "selenium_collect_requests":
             queue_url = Config.selenium_request_queue_url
-        elif context['task'].task_id =="aries_collect_requests":
+        elif context['task'].task_id == "aries_collect_requests":
             queue_url = Config.aries_sqs_request_queue_url
-        elif context['task'].task_id = "calipso_collect_requests":
+        elif context['task'].task_id == "calipso_collect_requests":
             queue_url = Config.calipso_sqs_request_queue_url
+        else:
+            queue_url = Config.sqs_request_queue_url
         count = (
             session.query(
                 ErgoTask.id
