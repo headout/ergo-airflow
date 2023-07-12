@@ -54,7 +54,7 @@ class TaskRequestBatchSensor(BaseSensorOperator):
     def poke(self, context):
         now = timezone.utcnow()
         self.log.info('Querying for %s tasks...', State.SCHEDULED)
-        queue = self.choose_queue()
+        queue = self.choose_queue(context)
         if not queue:
             self.log.info('No task is pending to be queued!')
             return False
@@ -66,7 +66,7 @@ class TaskRequestBatchSensor(BaseSensorOperator):
         return True
 
     @provide_session
-    def choose_queue(self, session=None) -> tuple:
+    def choose_queue(self, context,session=None) -> tuple:
         if context['task'].task_id == "selenium_collect_requests":
             queue_url = Config.selenium_request_queue_url
         elif context['task'].task_id == "aries_collect_requests":
