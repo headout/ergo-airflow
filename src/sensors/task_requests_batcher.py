@@ -61,6 +61,7 @@ class TaskRequestBatchSensor(BaseSensorOperator):
             return False
         queue_url, cnt_tasks = queue[0], queue[1]
         if cnt_tasks < self.max_requests and context['ti'].is_eligible_to_retry():
+            self.log.info("Cnt task are lesser")
             return False
         self.log.info('Found %d tasks', cnt_tasks)
         self.xcom_push(context, self.xcom_sqs_queue_url_key, queue_url)
@@ -81,6 +82,8 @@ class TaskRequestBatchSensor(BaseSensorOperator):
                 ErgoTask.id
             ).filter(self.filter_ergo_task,ErgoTask.queue_url == queue_url).count()
         )
+        self.log.info(queue_url)
+        self.log.info(count)
         if count > 0:
             return queue_url, count
         return None
