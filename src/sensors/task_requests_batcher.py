@@ -60,9 +60,9 @@ class TaskRequestBatchSensor(BaseSensorOperator):
             self.log.info('No task is pending to be queued!')
             return False
         queue_url, cnt_tasks = queue[0], queue[1]
-        if cnt_tasks < self.max_requests and context['ti'].is_eligible_to_retry():
-            self.log.info("Cnt task are lesser")
-            return False
+        #if cnt_tasks < self.max_requests and context['ti'].is_eligible_to_retry():
+        #    self.log.info("Cnt task are lesser")
+        #    return False
         self.log.info('Found %d tasks', cnt_tasks)
         self.xcom_push(context, self.xcom_sqs_queue_url_key, queue_url)
         return True
