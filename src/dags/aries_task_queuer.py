@@ -8,8 +8,8 @@ from ergo.config import Config
 from ergo.operators.sqs.sqs_task_pusher import SqsTaskPusherOperator
 from ergo.sensors.task_requests_batcher import TaskRequestBatchSensor
 
-XCOM_REQUEST_TASK_KEY = "request.tasks"
-XCOM_REQUEST_SQS_QUEUE_URL = "request.sqs_url"
+XCOM_REQUEST_TASK_KEY = "aries.request.tasks"
+XCOM_REQUEST_SQS_QUEUE_URL = "aries.request.sqs_url"
 TASK_ID_REQUEST_SENSOR = "aries_collect_requests"
 
 default_args = {
