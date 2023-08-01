@@ -18,6 +18,7 @@ default_args = {
     'retries': 2,
     'retry_delay': timedelta(minutes=1),
     'start_date': days_ago(1),
+    'priority_weight': 900,
 }
 
 max_requests = Config.max_requests
