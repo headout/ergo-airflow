@@ -32,14 +32,15 @@ with DAG(
         is_paused_upon_creation=False,
         schedule_interval=timedelta(seconds=10),
         catchup=False,
-        max_active_runs=max_concurrent_runs
+        max_active_runs=max_concurrent_runs,
+        dagrun_timeout=timedelta(minutes=5)
 ) as dag:
     selenium_collector = TaskRequestBatchSensor(
         task_id=TASK_ID_REQUEST_SENSOR,
         max_requests=max_requests,
         xcom_sqs_queue_url_key=XCOM_REQUEST_SQS_QUEUE_URL,
         poke_interval=poke_interval_collector,
-        timeout=timedelta(minutes=10).total_seconds()
+        timeout=timedelta(minutes=5).total_seconds()
     )
 
     selenium_pusher = SqsTaskPusherOperator(
