@@ -17,6 +17,7 @@ default_args = {
     'retries': 10,
     'retry_delay': timedelta(minutes=2),
     'start_date': days_ago(1),
+    'priority_weight': 900,
 }
 
 sqs_queue_url = Config.sqs_result_queue_url
