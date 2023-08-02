@@ -29,6 +29,7 @@ with DAG(
     is_paused_upon_creation=False,
     schedule_interval=timedelta(seconds=10),
     catchup=False,
+    dagrun_timeout=timedelta(minutes=10),
     max_active_runs=Config.max_runs_dag_job_collector
 ) as dag:
     sqs_collector = SQSSensor(
