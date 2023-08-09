@@ -1,1 +1,2 @@
 from .task_producer import ErgoTaskProducerOperator
+from sqs.sqs_task_pusher import SqsTaskPusherOperator
