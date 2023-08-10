@@ -7,7 +7,7 @@ from airflow.utils.db import provide_session
 from airflow.utils.decorators import apply_defaults
 from airflow.utils.state import State
 from ergo.models import ErgoJob, ErgoTask
-for ergo.config import Config
+from ergo.config import Config
 
 
 class ErgoTaskQueuerOperator(BaseOperator):
