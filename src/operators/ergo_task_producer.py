@@ -22,6 +22,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
             ergo_task_id: str = '',
             ergo_task_data: Union[dict, str] = {},
             ergo_task_sqs_queue_url: str = None,
+            aws_conn_id='aws_default',
             *args,
             **kwargs
     ):
