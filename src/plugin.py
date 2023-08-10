@@ -8,7 +8,6 @@ from ergo.links.ergo_task_detail import ErgoTaskDetailLink
 from ergo.migrations.utils import initdb
 from ergo.operators.task_producer import ErgoTaskProducerOperator
 from ergo.operators.ergo_task_producer import ErgoTaskQueuerOperator
-from ergo.operators. import ErgoTask
 from ergo.sensors.job_result_sensor import ErgoJobResultSensor
 from ergo.www.views import ErgoView
 from flask import Blueprint
