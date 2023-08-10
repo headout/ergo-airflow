@@ -53,7 +53,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
         self.log.info("Adding task '%s' with data: %s", task_id, req_data)
         task = ErgoTask(task_id, ti, self.ergo_task_sqs_queue_url, req_data)
         session.add(task)
-        success_resps, failed_resps = self._send_to_sqs(ergo_task_sqs_queue_url, task)
+        success_resps, failed_resps = self._send_to_sqs(self.ergo_task_sqs_queue_url, task)
         if success_resps:
             self.log.info(
                 'Successfully pushed %d messages!', len(success_resps))
