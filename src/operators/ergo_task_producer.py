@@ -89,7 +89,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
                 QueueUrl=queue_url,
                 Entries=entries
             )
-            succes_resp = response.get('Successful', list())
+            success_resp = response.get('Successful', list())
             failed_resp = response.get('Failed', list())
         except Exception as e:
             self.log.exception(
@@ -100,7 +100,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
             success_resp = list()
             failed_resp = list(entries)
 
-        return success_resp,failed_resp
+        return success_resp, failed_resp
 
 
     @staticmethod
