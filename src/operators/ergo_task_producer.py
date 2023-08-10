@@ -22,11 +22,12 @@ class ErgoTaskQueuerOperator(BaseOperator):
             ergo_task_id: str = '',
             ergo_task_data: Union[dict, str] = {},
             ergo_task_sqs_queue_url: str = None,
-            aws_conn_id='aws_default',
+            aws_conn_id: str = "aws_default",
             *args,
             **kwargs
     ):
         super().__init__(*args, **kwargs)
+        self.aws_conn_id = aws_conn_id
         self.ergo_task_callable = ergo_task_callable
         self.ergo_task_id = ergo_task_id
         self.ergo_task_data = ergo_task_data
