@@ -70,7 +70,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
             self._set_task_states(task,[int(resp['Id']) for resp in failed_resp],State.UP_FOR_RESCHEDULE)
 
 
-    session.commit()
+        session.commit()
         self.log.info("Commited task '%s' to %s", str(task), task.state)
 
     def _send_to_sqs(self, queue_url, task) -> Tuple[List, List]:
