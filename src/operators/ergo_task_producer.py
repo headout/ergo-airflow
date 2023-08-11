@@ -56,6 +56,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
         self.log.info("Adding task '%s' with data: %s", task_id, req_data)
         tasks = [ErgoTask(task_id, ti, self.ergo_task_sqs_queue_url, req_data)]
         session.add_all(tasks)
+        session.commit()
         success_resp, failed_resp = self._send_to_sqs(self.ergo_task_sqs_queue_url, tasks)
         if success_resp:
             self.log.info('Successfully pushed SQS task request message')
@@ -64,7 +65,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
             for resp in success_resp:
                 if resp['Id'] is not None:
                     ids_for_success.append(int(resp['Id']))
-                    self._set_task_states(task, ids_for_success, State.QUEUED)
+                    self._set_task_states(tasks, ids_for_success, State.QUEUED)
 
             jobs = [ErgoJob(resp['MessageId'], int(resp['Id'])) for resp in success_resp ]
             session.add_all(jobs)
@@ -76,14 +77,14 @@ class ErgoTaskQueuerOperator(BaseOperator):
             for resp in failed_resp:
                 if resp['Id'] is not None:
                     ids_for_reschedule.append(int(resp['Id']))
-                    self._set_task_states(task, ids_for_reschedule, State.UP_FOR_RESCHEDULE)
+                    self._set_task_states(tasks, ids_for_reschedule, State.UP_FOR_RESCHEDULE)
 
         session.commit()
 
     def _send_to_sqs(self, queue_url, tasks) -> Tuple[List, List]:
         sqs_client = SQSHook(aws_conn_id=self.aws_conn_id).get_conn()
         self.log.info('Trying to push %d messages on queue: %s\n',len(tasks), queue_url)
-        self.log.info('Request tasks: ' + '\n'.join([str(task) for task in tasks]))
+        self.log.info('Request tasks: ' + '\n'.join([str(task.task_id) for task in tasks]))
         entries = [
             {
                 'Id': str(task.id),
