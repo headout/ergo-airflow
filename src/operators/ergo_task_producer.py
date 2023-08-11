@@ -72,7 +72,8 @@ class ErgoTaskQueuerOperator(BaseOperator):
 
     def _send_to_sqs(self, queue_url, tasks) -> Tuple[List, List]:
         sqs_client = SQSHook(aws_conn_id=self.aws_conn_id).get_conn()
-        self.log.info('Trying to push %s messages on queue: %s\n',task.task_id, queue_url)
+        self.log.info('Trying to push %d messages on queue: %s\n',len(tasks), queue_url)
+        self.log.info('Request tasks: ' + '\n'.join([str(task) for task in tasks]))
         entries = [
             {
                 'Id': str(task.id),
