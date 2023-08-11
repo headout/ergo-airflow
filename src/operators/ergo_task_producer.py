@@ -54,19 +54,29 @@ class ErgoTaskQueuerOperator(BaseOperator):
             req_data = json.dumps(req_data)
 
         self.log.info("Adding task '%s' with data: %s", task_id, req_data)
-        task = [ErgoTask(task_id, ti, self.ergo_task_sqs_queue_url, req_data)]
-        session.add_all(task)
-        success_resp, failed_resp = self._send_to_sqs(self.ergo_task_sqs_queue_url, task)
+        tasks = [ErgoTask(task_id, ti, self.ergo_task_sqs_queue_url, req_data)]
+        session.add_all(tasks)
+        success_resp, failed_resp = self._send_to_sqs(self.ergo_task_sqs_queue_url, tasks)
         if success_resp:
             self.log.info('Successfully pushed SQS task request message')
-            self._set_task_states(task,[int(resp['Id']) for resp in success_resp],State.QUEUED)
+            self.log.info(success_resp)
+            ids_for_success = []
+            for resp in success_resp:
+                if resp['Id'] is not None:
+                    ids_for_success.append(int(resp['Id']))
+                    self._set_task_states(task, ids_for_success, State.QUEUED)
+
             jobs = [ErgoJob(resp['MessageId'], int(resp['Id'])) for resp in success_resp ]
             session.add_all(jobs)
 
         if failed_resp:
-            self.log.info('Failed pushed SQS task request message')
-            self.log.info("Setting the tasks up for reschedule!")
-            self._set_task_states(task,[int(resp['Id']) for resp in failed_resp],State.UP_FOR_RESCHEDULE)
+            self.log.info('Failed pushing SQS task request message')
+            self.log.info(failed_resp)
+            ids_for_reschedule = []
+            for resp in failed_resp:
+                if resp['Id'] is not None:
+                    ids_for_reschedule.append(int(resp['Id']))
+                    self._set_task_states(task, ids_for_reschedule, State.UP_FOR_RESCHEDULE)
 
         session.commit()
 
