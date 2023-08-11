@@ -1,5 +1,5 @@
 import json
-from typing import Union,List, Tuple
+from typing import Union, List, Tuple
 from airflow.contrib.hooks.aws_sqs_hook import SQSHook
 from airflow.models import BaseOperator
 from ergo.links.ergo_task_detail import ErgoTaskDetailLink
@@ -54,10 +54,9 @@ class ErgoTaskQueuerOperator(BaseOperator):
             req_data = json.dumps(req_data)
 
         self.log.info("Adding task '%s' with data: %s", task_id, req_data)
-        task = ErgoTask(task_id, ti, self.ergo_task_sqs_queue_url, req_data)
-        session.add(task)
+        task = [ErgoTask(task_id, ti, self.ergo_task_sqs_queue_url, req_data)]
+        session.add_all(task)
         success_resp, failed_resp = self._send_to_sqs(self.ergo_task_sqs_queue_url, task)
-
         if success_resp:
             self.log.info('Successfully pushed SQS task request message')
             self._set_task_states(task,[int(resp['Id']) for resp in success_resp],State.QUEUED)
@@ -69,11 +68,9 @@ class ErgoTaskQueuerOperator(BaseOperator):
             self.log.info("Setting the tasks up for reschedule!")
             self._set_task_states(task,[int(resp['Id']) for resp in failed_resp],State.UP_FOR_RESCHEDULE)
 
-
         session.commit()
-        self.log.info("Commited task '%s' to %s", str(task), task.state)
 
-    def _send_to_sqs(self, queue_url, task) -> Tuple[List, List]:
+    def _send_to_sqs(self, queue_url, tasks) -> Tuple[List, List]:
         sqs_client = SQSHook(aws_conn_id=self.aws_conn_id).get_conn()
         self.log.info('Trying to push %s messages on queue: %s\n',task.task_id, queue_url)
         entries = [
@@ -83,6 +80,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
                 'MessageGroupId': task.task_id,
                 'MessageDeduplicationId': str(task.id)
             }
+            for task in tasks
         ]
         try:
             response = sqs_client.send_message_batch(
