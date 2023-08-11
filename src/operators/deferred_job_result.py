@@ -2,11 +2,9 @@ from datetime import datetime
 from airflow.utils.db import provide_session
 from airflow.utils.decorators import apply_defaults
 from airflow.utils.state import State
-from airflow.models import BaseOperator
 from ergo.exceptions import ErgoFailedResultException
 from ergo.models import ErgoJob, ErgoTask
 from sqlalchemy.orm import joinedload
-
 
 class ErgoDeferredJobResult(BaseOperator):
 
