@@ -41,7 +41,7 @@ class ErgoDeferredJobResult(BaseOperator):
             .filter_by(ti_task_id=self.pusher_task_id, ti_dag_id=ti_dict['dag_id'], ti_run_id=ti_dict['run_id'])
         ).one()
 
-    def execute(self, context):
+    def execute(self, context, event=None):
         ti_dict = context.get('ti_dict', dict())
         if not ti_dict:
             ti = context['ti']
