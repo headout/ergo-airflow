@@ -52,11 +52,11 @@ class ErgoTaskQueuerOperator(BaseOperator):
             req_data = ''
         if not isinstance(req_data, str):
             req_data = json.dumps(req_data)
-
         self.log.info("Adding task '%s' with data: %s", task_id, req_data)
         tasks = [ErgoTask(task_id, ti, self.ergo_task_sqs_queue_url, req_data)]
         session.add_all(tasks)
-        session.commit()
+        session.flush()
+
         success_resp, failed_resp = self._send_to_sqs(self.ergo_task_sqs_queue_url, tasks)
         if success_resp:
             self.log.info('Successfully pushed SQS task request message')
@@ -66,7 +66,6 @@ class ErgoTaskQueuerOperator(BaseOperator):
                 if resp['Id'] is not None:
                     ids_for_success.append(int(resp['Id']))
                     self._set_task_states(tasks, ids_for_success, State.QUEUED)
-
             jobs = [ErgoJob(resp['MessageId'], int(resp['Id'])) for resp in success_resp ]
             session.add_all(jobs)
 
