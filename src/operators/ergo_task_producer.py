@@ -10,6 +10,7 @@ from ergo.models import ErgoJob, ErgoTask
 from ergo.config import Config
 
 
+
 class ErgoTaskQueuerOperator(BaseOperator):
     template_fields = ['ergo_task_id', 'ergo_task_data']
 
@@ -55,11 +56,10 @@ class ErgoTaskQueuerOperator(BaseOperator):
         self.log.info("Adding task '%s' with data: %s", task_id, req_data)
         task = ErgoTask(task_id, ti, self.ergo_task_sqs_queue_url, req_data)
         task.state = State.QUEUED
-        tasks = [task]
-        session.add_all(tasks)
+        session.add(task)
         session.flush()
 
-        success_resp, failed_resp = self._send_to_sqs(self.ergo_task_sqs_queue_url, tasks)
+        success_resp, failed_resp = self._send_to_sqs(self.ergo_task_sqs_queue_url, task)
         if success_resp:
             self.log.info('Successfully pushed SQS task request message')
             self.log.info(success_resp)
@@ -67,29 +67,22 @@ class ErgoTaskQueuerOperator(BaseOperator):
             for resp in success_resp:
                 if resp['Id'] is not None:
                     ids_for_success.append(int(resp['Id']))
-            self.log.info(ids_for_success)
-            jobs = [ErgoJob(resp['MessageId'], int(resp['Id'])) for resp in success_resp ]
-            session.add_all(jobs)
+                    job = ErgoJob(resp['MessageId'], int(resp['Id']))
+                    session.add(job)
 
         if failed_resp:
             self.log.info('Failed pushing SQS task request message')
             self.log.info(failed_resp)
-            ids_for_reschedule = []
-            for resp in failed_resp:
-                if resp['Id'] is not None:
-                    ids_for_reschedule.append(int(resp['Id']))
-                    tasks[0].state = State.UP_FOR_RESCHEDULE
-            for task in tasks:
-                self.log.info("Task ID: %s, State: %s, Request Data: %s", task.id, task.state, task.request_data)
-            self.log.info(ids_for_success)
+            task.state = State.UP_FOR_RESCHEDULE
+            self.log.info("Task ID: %s, State: %s, Request Data: %s", task.id, task.state, task.request_data)
+
 
         session.commit()
 
-    def _send_to_sqs(self, queue_url, tasks) -> Tuple[List, List]:
+    def _send_to_sqs(self, queue_url, task) -> Tuple[List, List]:
         sqs_client = SQSHook(aws_conn_id=self.aws_conn_id).get_conn()
-        self.log.info('Trying to push %d messages on queue: %s\n',len(tasks), queue_url)
-        self.log.info('Request tasks: ' + '\n'.join([str(task.task_id) for task in tasks]))
-        self.log.info(tasks)
+        self.log.info('Trying to push a message on queue: %s\n', queue_url)
+        self.log.info('Request task: %s', task.task_id)
         entries = [
             {
                 'Id': str(task.id),
@@ -97,7 +90,6 @@ class ErgoTaskQueuerOperator(BaseOperator):
                 'MessageGroupId': task.task_id,
                 'MessageDeduplicationId': str(task.id)
             }
-            for task in tasks
         ]
         try:
             response = sqs_client.send_message_batch(
@@ -118,6 +110,3 @@ class ErgoTaskQueuerOperator(BaseOperator):
             self.log.info(failed_resp)
 
         return success_resp, failed_resp
-
-
-
