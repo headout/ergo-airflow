@@ -66,6 +66,8 @@ class ErgoTaskQueuerOperator(BaseOperator):
                 if resp['Id'] is not None:
                     ids_for_success.append(int(resp['Id']))
                     self._set_task_states(tasks, ids_for_success, State.QUEUED)
+            self.log.info(tasks)
+            self.log.info(ids_for_success)
             jobs = [ErgoJob(resp['MessageId'], int(resp['Id'])) for resp in success_resp ]
             session.add_all(jobs)
 
@@ -77,6 +79,8 @@ class ErgoTaskQueuerOperator(BaseOperator):
                 if resp['Id'] is not None:
                     ids_for_reschedule.append(int(resp['Id']))
                     self._set_task_states(tasks, ids_for_reschedule, State.UP_FOR_RESCHEDULE)
+            self.log.info(tasks)
+            self.log.info(ids_for_success)
 
         session.commit()
 
@@ -84,6 +88,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
         sqs_client = SQSHook(aws_conn_id=self.aws_conn_id).get_conn()
         self.log.info('Trying to push %d messages on queue: %s\n',len(tasks), queue_url)
         self.log.info('Request tasks: ' + '\n'.join([str(task.task_id) for task in tasks]))
+        self.log.info(tasks)
         entries = [
             {
                 'Id': str(task.id),
@@ -108,6 +113,8 @@ class ErgoTaskQueuerOperator(BaseOperator):
             )
             success_resp = list()
             failed_resp = list(entries)
+            self.log.info(success_resp)
+            self.log.info(failed_resp)
 
         return success_resp, failed_resp
 
