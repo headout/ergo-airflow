@@ -53,7 +53,9 @@ class ErgoTaskQueuerOperator(BaseOperator):
         if not isinstance(req_data, str):
             req_data = json.dumps(req_data)
         self.log.info("Adding task '%s' with data: %s", task_id, req_data)
-        tasks = [ErgoTask(task_id, ti, self.ergo_task_sqs_queue_url, req_data)]
+        task = ErgoTask(task_id, ti, self.ergo_task_sqs_queue_url, req_data)
+        task.state = State.QUEUED
+        tasks = [task]
         session.add_all(tasks)
         session.flush()
 
@@ -65,9 +67,6 @@ class ErgoTaskQueuerOperator(BaseOperator):
             for resp in success_resp:
                 if resp['Id'] is not None:
                     ids_for_success.append(int(resp['Id']))
-                    self._set_task_states(tasks, ids_for_success, State.QUEUED)
-            for task in tasks:
-                self.log.info("Task ID: %s, State: %s, Request Data: %s", task.id, task.state, task.request_data)
             self.log.info(ids_for_success)
             jobs = [ErgoJob(resp['MessageId'], int(resp['Id'])) for resp in success_resp ]
             session.add_all(jobs)
@@ -79,7 +78,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
             for resp in failed_resp:
                 if resp['Id'] is not None:
                     ids_for_reschedule.append(int(resp['Id']))
-                    self._set_task_states(tasks, ids_for_reschedule, State.UP_FOR_RESCHEDULE)
+                    tasks[0].state = State.UP_FOR_RESCHEDULE
             for task in tasks:
                 self.log.info("Task ID: %s, State: %s, Request Data: %s", task.id, task.state, task.request_data)
             self.log.info(ids_for_success)
@@ -121,8 +120,4 @@ class ErgoTaskQueuerOperator(BaseOperator):
         return success_resp, failed_resp
 
 
-    @staticmethod
-    def _set_task_states( tasks, task_ids, state):
-        for task in tasks:
-            if task.id in task_ids:
-                task.state = state
+
