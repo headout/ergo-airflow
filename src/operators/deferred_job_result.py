@@ -11,7 +11,7 @@ from sqlalchemy.orm import joinedload
 from airflow.triggers.temporal import TimeDeltaTrigger
 
 
-class ErgoDeferredJobResult(BaseOperator):
+class ErgoDeferredJobResult(BaseSensorOperator):
 
     @apply_defaults
     def __init__(
