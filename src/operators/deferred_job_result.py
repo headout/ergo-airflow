@@ -65,11 +65,6 @@ class ErgoDeferredJobResult(BaseOperator):
             raise ErgoFailedResultException(400, "Cron execution failed")
 
         self.log.info('Task - %s reached state %s', str(task), task.state)
-        job = task.job
-        if job is not None:
-            self.log.info('Job - (%s)' + (f'responded back at {job.response_at}' if job.response_at else ''), str(job))
-        else:
-            self.log.info('Waiting for task "%s" to be queued...', str(task))
         return
 
 
