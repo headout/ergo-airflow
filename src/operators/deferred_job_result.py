@@ -50,7 +50,7 @@ class ErgoDeferredJobResult(BaseOperator):
         task = self._get_ergo_task(ti_dict)
 
         while task.state not in self.wait_for_state:
-            self.defer(trigger=TimeDeltaTrigger(timedelta(seconds=10)), method_name="execute")
+            self.defer(trigger=TimeDeltaTrigger(timedelta(seconds=20)), method_name="execute")
             task = self._get_ergo_task(ti_dict)
             self.log.info('Received task - %s... STATE: %s', str(task), task.state)
             job = task.job
