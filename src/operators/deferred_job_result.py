@@ -41,17 +41,17 @@ class ErgoDeferredJobResult(BaseOperator):
         ).one()
 
     @provide_session
-    def execute(self, context, event=None):
+    def execute(self, context, session=None, event=None):
         ti_dict = context.get('ti_dict', dict())
         if not ti_dict:
             ti = context['ti']
             ti_dict['dag_id'] = ti.dag_id
             ti_dict['run_id'] = ti.run_id
-        task = self._get_ergo_task(ti_dict)
+        task = self._get_ergo_task(ti_dict, session=session)
 
         while task.state not in self.wait_for_state:
             self.defer(trigger=TimeDeltaTrigger(timedelta(seconds=20)), method_name="execute")
-            task = self._get_ergo_task(ti_dict)
+            task = self._get_ergo_task(ti_dict, session=session)
             self.log.info('Received task - %s... STATE: %s', str(task), task.state)
             job = task.job
             if job is not None:
