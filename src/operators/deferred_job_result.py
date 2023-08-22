@@ -33,7 +33,6 @@ class ErgoDeferredJobResult(BaseOperator):
         if self.wait_for_state != wait_for_state:
             self.wait_for_state.extend(wait_for_state)
 
-    @provide_session
     def _get_ergo_task(self, ti_dict, session=None):
         return (
             session.query(ErgoTask)
@@ -41,6 +40,7 @@ class ErgoDeferredJobResult(BaseOperator):
             .filter_by(ti_task_id=self.pusher_task_id, ti_dag_id=ti_dict['dag_id'], ti_run_id=ti_dict['run_id'])
         ).one()
 
+    @provide_session
     def execute(self, context, event=None):
         ti_dict = context.get('ti_dict', dict())
         if not ti_dict:
