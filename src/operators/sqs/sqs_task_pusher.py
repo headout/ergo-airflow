@@ -24,7 +24,7 @@ class SqsTaskPusherOperator(BaseOperator):
     ):
         super().__init__(*args, **kwargs)
         self.task_id_collector = task_id_collector
-        self.max_requests = max_requests
+        self.max_requests = 30
         self.xcom_sqs_queue_url_key = xcom_sqs_queue_url_key
         self.use_row_lock = use_row_lock
         self.aws_conn_id = aws_conn_id
@@ -72,30 +72,36 @@ class SqsTaskPusherOperator(BaseOperator):
                       len(tasks), queue_url)
         self.log.info('Request tasks: ' + '\n'.join([str(task) for task in tasks]))
 
-        entries = [
-            {
-                'Id': str(task.id),
-                'MessageBody': task.request_data,
-                'MessageGroupId': task.task_id,
-                'MessageDeduplicationId': str(task.id)
-            }
-            for task in tasks
-        ]
-        try:
-            response = sqs_client.send_message_batch(
-                QueueUrl=queue_url,
-                Entries=entries
-            )
-            success_resps = response.get('Successful', list())
-            failed_resps = response.get('Failed', list())
-        except Exception as e:
-            self.log.exception(
-                'SQS Send message API failed for "%s" queue!\nRequest Entries: %', queue_url, str(
-                    entries),
-                exc_info=e
-            )
-            success_resps = list()
-            failed_resps = list(entries)
+        entries_batches = [tasks[i:i+10] for i in range(0, len(tasks), 10)]
+
+        success_resps = []
+        failed_resps = []
+
+        for batch in entries_batches:
+            entries = [
+                {
+                    'Id': str(task.id),
+                    'MessageBody': task.request_data,
+                    'MessageGroupId': task.task_id,
+                    'MessageDeduplicationId': str(task.id)
+                }
+                for task in batch
+            ]
+            try:
+                response = sqs_client.send_message_batch(
+                    QueueUrl=queue_url,
+                    Entries=entries
+                )
+                success_resps.extend(response.get('Successful', []))
+                failed_resps.extend(response.get('Failed', []))
+            except Exception as e:
+                self.log.exception(
+                    'SQS Send message API failed for "%s" queue!\nRequest Entries: %s', queue_url, str(
+                        entries),
+                    exc_info=e
+                )
+                failed_resps.extend(entries)
+
         return (success_resps, failed_resps)
 
     @staticmethod
