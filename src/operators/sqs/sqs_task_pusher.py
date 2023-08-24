@@ -24,7 +24,7 @@ class SqsTaskPusherOperator(BaseOperator):
     ):
         super().__init__(*args, **kwargs)
         self.task_id_collector = task_id_collector
-        self.max_requests = 30
+        self.max_requests = max_requests
         self.xcom_sqs_queue_url_key = xcom_sqs_queue_url_key
         self.use_row_lock = use_row_lock
         self.aws_conn_id = aws_conn_id

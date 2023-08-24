@@ -46,7 +46,7 @@ with DAG(
     selenium_pusher = SqsTaskPusherOperator(
         task_id="selenium_push_tasks",
         task_id_collector=TASK_ID_REQUEST_SENSOR,
-        max_requests=max_requests,
+        max_requests=30,
         xcom_sqs_queue_url_key=XCOM_REQUEST_SQS_QUEUE_URL,
         use_row_lock=(max_concurrent_runs > 1)
     )
