@@ -37,7 +37,7 @@ with DAG(
 ) as dag:
     selenium_collector = TaskRequestBatchSensor(
         task_id=TASK_ID_REQUEST_SENSOR,
-        max_requests=max_requests,
+        max_requests=30,
         xcom_sqs_queue_url_key=XCOM_REQUEST_SQS_QUEUE_URL,
         poke_interval=poke_interval_collector,
         timeout=timedelta(minutes=5).total_seconds()
