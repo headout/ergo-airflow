@@ -48,7 +48,7 @@ with DAG(
         task_id_collector=TASK_ID_REQUEST_SENSOR,
         max_requests=max_requests,
         xcom_sqs_queue_url_key=XCOM_REQUEST_SQS_QUEUE_URL,
-        use_row_lock=(max_concurrent_runs > 0)
+        use_row_lock=(max_concurrent_runs > 1)
     )
 
 aries_collector >> aries_pusher
