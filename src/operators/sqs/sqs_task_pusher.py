@@ -7,7 +7,6 @@ from airflow.utils.decorators import apply_defaults
 from airflow.utils.state import State
 from ergo.models import ErgoJob, ErgoTask
 
-
 class SqsTaskPusherOperator(BaseOperator):
     filter_ergo_task = ErgoTask.state.in_([State.SCHEDULED, State.UP_FOR_RESCHEDULE])
 
