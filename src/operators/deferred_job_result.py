@@ -62,10 +62,11 @@ class ErgoDeferredJobResult(BaseOperator):
                 self.log.info('Waiting for task "%s" to reach state %s...', str(task), self.wait_for_state)
 
         if task.state == State.FAILED:
-            error_message = "Cron execution failed"
-            self.log.error(error_message)
-            ti = context['ti']
-            ti.set_state(State.FAILED)
+            if job is not None:
+                self.log.info('Job - (%s)' + (f'responded back at {job.response_at}' if job.response_at else ''), str(job))
+                raise ErgoFailedResultException(job.result_code, job.error_msg)
+            else:
+                raise ErgoFailedResultException(400, "Cron execution failed due to unknown reason")
 
         self.log.info('Task - %s reached state %s', str(task), task.state)
         return
