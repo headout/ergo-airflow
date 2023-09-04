@@ -36,8 +36,9 @@ with DAG(
         task_id=TASK_ID_SQS_COLLECTOR,
         sqs_queue=sqs_queue_url,
         max_messages=10,
-        wait_time_seconds=10,
-        poke_interval=poke_interval_collector
+        wait_time_seconds=5,
+        poke_interval=poke_interval_collector,
+        num_batches=5
     )
 
     result_transformer = JobResultFromMessagesOperator(

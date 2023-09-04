@@ -18,4 +18,5 @@ class Config(object):
     max_runs_dag_job_collector = conf.getint(SECTION_NAME, "max_runs_dag_job_collector", fallback=1)
 
     poke_interval_task_collector = conf.getint(SECTION_NAME, "poke_interval_task_collect_secs", fallback=60)
-    poke_interval_result_collector = conf.getint(SECTION_NAME, "poke_interval_result_collect_secs", fallback=60)
+    # poke_interval_result_collector = conf.getint(SECTION_NAME, "poke_interval_result_collect_secs", fallback=2)
+    poke_interval_result_collector = 2
