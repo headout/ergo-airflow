@@ -48,6 +48,7 @@ class ErgoDeferredJobResult(BaseOperator):
             ti_dict['dag_id'] = ti.dag_id
             ti_dict['run_id'] = ti.run_id
         task = self._get_ergo_task(ti_dict, session=session)
+        job = task.job
 
         while task.state not in self.wait_for_state:
             self.defer(trigger=TimeDeltaTrigger(timedelta(seconds=15)), method_name="execute")
@@ -62,7 +63,11 @@ class ErgoDeferredJobResult(BaseOperator):
                 self.log.info('Waiting for task "%s" to reach state %s...', str(task), self.wait_for_state)
 
         if task.state == State.FAILED:
-            raise ErgoFailedResultException(400, "Cron execution failed")
+            if job is not None:
+                self.log.info('Job - (%s)' + (f'responded back at {job.response_at}' if job.response_at else ''), str(job))
+                raise ErgoFailedResultException(job.result_code, job.error_msg)
+            else:
+                raise ErgoFailedResultException(400, "Cron execution failed due to unknown reason")
 
         self.log.info('Task - %s reached state %s', str(task), task.state)
         return
