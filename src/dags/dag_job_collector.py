@@ -15,7 +15,7 @@ default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
     'retries': 10,
-    'retry_delay': timedelta(minutes=2),
+    'retry_delay': timedelta(seconds=30),
     'start_date': days_ago(1),
     'priority_weight': 900,
 }
