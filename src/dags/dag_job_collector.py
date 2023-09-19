@@ -29,7 +29,7 @@ with DAG(
     is_paused_upon_creation=False,
     schedule_interval=timedelta(seconds=10),
     catchup=False,
-    dagrun_timeout=timedelta(minutes=10),
+    dagrun_timeout=timedelta(minutes=15),
     max_active_runs=Config.max_runs_dag_job_collector
 ) as dag:
     sqs_collector = SQSSensor(
@@ -37,12 +37,14 @@ with DAG(
         sqs_queue=sqs_queue_url,
         max_messages=10,
         wait_time_seconds=10,
-        poke_interval=poke_interval_collector
+        poke_interval=poke_interval_collector,
+        pool='job_collector_pool'
     )
 
     result_transformer = JobResultFromMessagesOperator(
         task_id='process_job_result',
-        sqs_sensor_task_id=TASK_ID_SQS_COLLECTOR
+        sqs_sensor_task_id=TASK_ID_SQS_COLLECTOR,
+        pool='job_collector_pool'
     )
 
 sqs_collector >> result_transformer
