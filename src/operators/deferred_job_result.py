@@ -48,6 +48,7 @@ class ErgoDeferredJobResult(BaseOperator):
             ti_dict['dag_id'] = ti.dag_id
             ti_dict['run_id'] = ti.run_id
         task = self._get_ergo_task(ti_dict, session=session)
+        job = task.job
 
         while task.state not in self.wait_for_state:
             self.defer(trigger=TimeDeltaTrigger(timedelta(seconds=15)), method_name="execute")
