@@ -32,6 +32,10 @@ class ErgoView(BaseView):
     def list(self):
         return 'ergo'
 
+    @expose('/test', methods=['GET'])
+    def test_endpoint(self):
+        return '1234'
+
     @expose('/task_detail')
     @login_required
     @has_access
