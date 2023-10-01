@@ -122,13 +122,3 @@ class SQSResultCollector(BaseOperator):
             else:
                 raise ErgoFailedResultException(400, "Cron execution failed due to unknown reason")
         return
-
-
-
-
-
-
-
-
-
-
