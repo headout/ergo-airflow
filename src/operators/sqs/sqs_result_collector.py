@@ -80,6 +80,7 @@ class SQSResultCollector(BaseOperator):
                         method_name="read_sqs_message",
                         kwargs={
                             "job_id": job_id,
+                            "session": session,
                         }
                     )
                 else:
@@ -112,7 +113,7 @@ class SQSResultCollector(BaseOperator):
         task = self._get_ergo_task(ti_dict, session=session)
         job = task.job
         job_id = job.id
-        if self.read_sqs_message(job_id,self,context,job_id,session=None,event=None):
+        if self.read_sqs_message(self,context,job_id):
             raise ErgoFailedResultException(400, "Cron execution failed due to unknown reason")
         elif task.state == State.FAILED:
             if job is not None:
