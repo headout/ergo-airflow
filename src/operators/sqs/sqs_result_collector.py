@@ -8,7 +8,6 @@ from airflow.utils.state import State
 from ergo.models import ErgoJob, ErgoTask
 from ergo.exceptions import ErgoFailedResultException
 from airflow.utils import timezone
-from airflow.contrib.hooks.aws_sqs_hook import SQSHook
 from sqlalchemy.orm import joinedload
 from ergo import JobResultStatus
 from airflow.triggers.temporal import TimeDeltaTrigger
@@ -59,7 +58,7 @@ class SQSResultCollector(BaseOperator):
 
 
     def read_sqs_message(self, context, job_id, session=None, event=None):
-        sqs_client = sqs_hook.get_client_type('sqs', region_name='us-east-1')
+        sqs_client = SQSHook(aws_conn_id=self.aws_conn_id).get_conn()
         while True:
             try:
                 # Receive messages with the specified message group ID
