@@ -80,7 +80,6 @@ class SQSResultCollector(BaseOperator):
                         method_name="read_sqs_message",
                         kwargs={
                             "job_id": job_id,
-                            "session": session,
                         }
                     )
                 else:
