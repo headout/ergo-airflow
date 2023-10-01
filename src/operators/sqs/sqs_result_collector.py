@@ -14,7 +14,6 @@ from ergo import JobResultStatus
 from airflow.triggers.temporal import TimeDeltaTrigger
 
 
-
 class SQSResultCollector(BaseOperator):
     @apply_defaults
     def __init__(
@@ -22,11 +21,11 @@ class SQSResultCollector(BaseOperator):
             pusher_task_id: str,
             queue_url: str,
             aws_conn_id: str,
-            wait_for_state=list(State.finished),
             *args,
             **kwargs
     ):
         super().__init__(*args, **kwargs)
+        self.queue_url = queue_url
         self.pusher_task_id = pusher_task_id
         self.xcom_sqs_queue_url_key = xcom_sqs_queue_url_key
         self.aws_conn_id = aws_conn_id

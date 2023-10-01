@@ -9,6 +9,7 @@ from ergo.migrations.utils import initdb
 from ergo.operators.task_producer import ErgoTaskProducerOperator
 from ergo.operators.ergo_task_producer import ErgoTaskQueuerOperator
 from ergo.sensors.job_result_sensor import ErgoJobResultSensor
+from ergo.operators.sqs.sqs_result_collector import SQSResultCollector
 from ergo.www.views import ErgoView
 from flask import Blueprint
 
@@ -28,7 +29,7 @@ ergo_bp = Blueprint(
 
 class ErgoPlugin(AirflowPlugin, LoggingMixin):
     name = 'ergo'
-    operators = (ErgoTaskProducerOperator,ErgoTaskQueuerOperator,)
+    operators = (ErgoTaskProducerOperator,ErgoTaskQueuerOperator,SQSResultCollector,)
     sensors = (ErgoJobResultSensor,)
     appbuilder_views = (ab_ergo_package,)
     flask_blueprints = (ergo_bp,)
