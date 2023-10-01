@@ -27,7 +27,6 @@ class SQSResultCollector(BaseOperator):
         super().__init__(*args, **kwargs)
         self.queue_url = queue_url
         self.pusher_task_id = pusher_task_id
-        self.xcom_sqs_queue_url_key = xcom_sqs_queue_url_key
         self.aws_conn_id = aws_conn_id
 
     def _get_ergo_task(self, ti_dict, session=None):
