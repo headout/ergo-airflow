@@ -60,7 +60,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
         session.flush()
         return job
 
-    def create_task(self, req_data,session=None):
+    def create_task(self, context, task_id, req_data, session=None):
         ti = context['ti']
         ti_dict = context.get('ti_dict', dict())
         if not ti_dict:
@@ -73,12 +73,12 @@ class ErgoTaskQueuerOperator(BaseOperator):
         session.flush()
         return task
 
-    def _get_ergo_task(self, ti_dict, session=None):
+    def _get_ergo_task(self, task_id, ti_dict, session=None):
             try:
                 return (
                     session.query(ErgoTask)
                     .options(joinedload('job'))
-                    .filter_by(ti_task_id=self.pusher_task_id, ti_dag_id=ti_dict['dag_id'], ti_run_id=ti_dict['run_id'])
+                    .filter_by(ti_task_id=task_id, ti_dag_id=ti_dict['dag_id'], ti_run_id=ti_dict['run_id'])
                 ).one()
             except NoResultFound:
                 # Handle the case where no tasks match the criteria
@@ -107,17 +107,17 @@ class ErgoTaskQueuerOperator(BaseOperator):
             req_data = json.dumps(req_data)
         self.log.info("Adding task '%s' with data: %s", task_id, req_data)
 
-        prev_task = self._get_ergo_task(ti_dict=ti_dict,session=session)
+        prev_task = self._get_ergo_task(ti_dict=ti_dict, task_id=task_id,session=session)
 
         if prev_task is not None:
             prev_job = prev_task.job
-            if job is not None:
+            if prev_job is not None:
                 return
             else:
                 self.create_job(prev_task, session)
 
-        task = self.create_task(req_data, session)
-        job = self.create_job(task, session)
+        task = self.create_task(task_id=task_id, context=context, req_data=req_data, session=session)
+        job = self.create_job(task=task, session=session)
 
         session.commit()
 
