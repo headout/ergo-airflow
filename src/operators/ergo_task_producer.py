@@ -9,7 +9,7 @@ from airflow.utils.state import State
 from ergo.models import ErgoJob, ErgoTask
 from ergo.config import Config
 from sqlalchemy.orm.exc import NoResultFound
-
+from sqlalchemy.orm import joinedload
 
 
 class ErgoTaskQueuerOperator(BaseOperator):
