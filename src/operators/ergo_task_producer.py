@@ -115,9 +115,9 @@ class ErgoTaskQueuerOperator(BaseOperator):
                 return
             else:
                 self.create_job(prev_task, session)
-
-        task = self.create_task(task_id=task_id, context=context, req_data=req_data, session=session)
-        job = self.create_job(task=task, session=session)
+        else:
+            task = self.create_task(task_id=task_id, context=context, req_data=req_data, session=session)
+            job = self.create_job(task=task, session=session)
 
         session.commit()
 
