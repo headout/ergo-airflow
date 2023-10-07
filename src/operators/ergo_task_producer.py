@@ -57,6 +57,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
             self.log.info(failed_resp)
             task.state = State.UP_FOR_RESCHEDULE
             self.log.info("Task ID: %s, State: %s, Request Data: %s", task.id, task.state, task.request_data)
+        session.flush()
         return job
 
     def create_task(self, context, task_id, req_data, session=None):
@@ -70,9 +71,12 @@ class ErgoTaskQueuerOperator(BaseOperator):
         task = ErgoTask(task_id, ti, self.ergo_task_sqs_queue_url, req_data)
         task.state = State.QUEUED
         session.add(task)
+        session.flush()
         return task
 
     def _get_ergo_task(self, task_id, ti_dict, session=None):
+            self.log.info("Details of searcher tasks")
+            self.log.info(f"{task_id} {ti_dict}")
             try:
                 return (
                     session.query(ErgoTask)
