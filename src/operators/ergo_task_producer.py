@@ -40,6 +40,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
 
 
     def create_job(self, task, session=None):
+        self.log.info(f"Creating job for task: {task}")
         success_resp, failed_resp = self._send_to_sqs(self.ergo_task_sqs_queue_url, task)
         if success_resp:
             self.log.info('Successfully pushed SQS task request message')
@@ -56,8 +57,6 @@ class ErgoTaskQueuerOperator(BaseOperator):
             self.log.info(failed_resp)
             task.state = State.UP_FOR_RESCHEDULE
             self.log.info("Task ID: %s, State: %s, Request Data: %s", task.id, task.state, task.request_data)
-        session.commit()
-        session.flush()
         return job
 
     def create_task(self, context, task_id, req_data, session=None):
@@ -67,10 +66,10 @@ class ErgoTaskQueuerOperator(BaseOperator):
             ti = context['ti']
             ti_dict['dag_id'] = ti.dag_id
             ti_dict['run_id'] = ti.run_id
+        self.log.info(f"Creating task for {task_id}")
         task = ErgoTask(task_id, ti, self.ergo_task_sqs_queue_url, req_data)
         task.state = State.QUEUED
         session.add(task)
-        session.flush()
         return task
 
     def _get_ergo_task(self, task_id, ti_dict, session=None):
@@ -81,6 +80,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
                     .filter_by(ti_task_id=task_id, ti_dag_id=ti_dict['dag_id'], ti_run_id=ti_dict['run_id'])
                 ).one()
             except NoResultFound:
+                self.log.info("No task found")
                 # Handle the case where no tasks match the criteria
                 return None  # Or raise an appropriate exception or return a default value
 
@@ -107,13 +107,17 @@ class ErgoTaskQueuerOperator(BaseOperator):
             req_data = json.dumps(req_data)
         self.log.info("Adding task '%s' with data: %s", task_id, req_data)
 
-        prev_task = self._get_ergo_task(ti_dict=ti_dict, task_id=task_id,session=session)
-
+        prev_task = self._get_ergo_task(ti_dict=ti_dict, task_id=task_id, session=session)
+        self.log.info(f"Previously created tasks {prev_task}")
         if prev_task is not None:
             prev_job = prev_task.job
+            self.log.info(f"Previously created tasks {prev_job}")
+            self.log.info("Task was already created")
             if prev_job is not None:
+                self.log.info("Task and Job were already created")
                 return
             else:
+                self.log.info("Job was not created")
                 self.create_job(prev_task, session)
         else:
             task = self.create_task(task_id=task_id, context=context, req_data=req_data, session=session)
