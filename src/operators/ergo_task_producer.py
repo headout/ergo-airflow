@@ -110,7 +110,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
             req_data = json.dumps(req_data)
         self.log.info("Adding task '%s' with data: %s", task_id, req_data)
 
-        prev_task = self._get_ergo_task(ti.task_id, ti_dict, session)
+        prev_task = self._get_ergo_task(ti_task_id=ti.task_id, ti_dict=ti_dict, session=session)
         if prev_task is not None:
             prev_job = prev_task.job
             self.log.info(f"Ergo task has already been created. : {prev_task}")
@@ -120,8 +120,8 @@ class ErgoTaskQueuerOperator(BaseOperator):
                 self.log.info("Job was not created")
                 self.create_job(prev_task, session)
         else:
-            task = self.create_task(task_id, context, req_data, session)
-            job = self.create_job(task, session)
+            task = self.create_task(task_id=task_id, context=context, req_data=req_data, session=session)
+            job = self.create_job(task=task, session=session)
 
         session.commit()
 
