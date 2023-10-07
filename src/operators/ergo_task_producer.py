@@ -74,14 +74,14 @@ class ErgoTaskQueuerOperator(BaseOperator):
         session.commit()
         return task
 
-    def _get_ergo_task(self, task_id, ti_dict, session=None):
+    def _get_ergo_task(self, ti_task_id, ti_dict, session=None):
             self.log.info("Details of searcher tasks")
-            self.log.info(f"{task_id} {ti_dict}")
+            self.log.info(f"{ti_task_id} {ti_dict}")
             try:
                 return (
                     session.query(ErgoTask)
                     .options(joinedload('job'))
-                    .filter_by(ti_task_id=task_id, ti_dag_id=ti_dict['dag_id'], ti_run_id=ti_dict['run_id'])
+                    .filter_by(ti_task_id=ti_task_id, ti_dag_id=ti_dict['dag_id'], ti_run_id=ti_dict['run_id'])
                 ).one()
             except NoResultFound:
                 self.log.info("No task found")
@@ -111,7 +111,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
             req_data = json.dumps(req_data)
         self.log.info("Adding task '%s' with data: %s", task_id, req_data)
 
-        prev_task = self._get_ergo_task(ti_dict=ti_dict, task_id=task_id, session=session)
+        prev_task = self._get_ergo_task(ti_task_id=ti.task_id, ti_dict=ti_dict, session=session)
         self.log.info(f"Previously created tasks {prev_task}")
         if prev_task is not None:
             prev_job = prev_task.job
