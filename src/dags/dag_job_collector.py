@@ -23,28 +23,32 @@ default_args = {
 sqs_queue_url = Config.sqs_result_queue_url
 poke_interval_collector = Config.poke_interval_result_collector
 
-with DAG(
-    'ergo_job_collector',
-    default_args=default_args,
-    is_paused_upon_creation=False,
-    schedule_interval=timedelta(seconds=10),
-    catchup=False,
-    dagrun_timeout=timedelta(minutes=15),
-    max_active_runs=Config.max_runs_dag_job_collector
-) as dag:
-    sqs_collector = SQSSensor(
-        task_id=TASK_ID_SQS_COLLECTOR,
-        sqs_queue=sqs_queue_url,
-        max_messages=10,
-        wait_time_seconds=10,
-        poke_interval=poke_interval_collector,
-        pool='job_collector_pool'
-    )
+for i in range(3):
+    dag_id = f'ergo_job_collector_{i}'
+    task_id_sqs_collector = f'collect_sqs_messages_{i}'
+    task_id_result_transformer = f'process_job_result_{i}'
+    with DAG(
+        dag_id,
+        default_args=default_args,
+        is_paused_upon_creation=False,
+        schedule_interval=timedelta(seconds=10),
+        catchup=False,
+        dagrun_timeout=timedelta(minutes=15),
+        max_active_runs=Config.max_runs_dag_job_collector
+    ) as dag:
+        sqs_collector = SQSSensor(
+            task_id=task_id_sqs_collector,
+            sqs_queue=sqs_queue_url,
+            max_messages=10,
+            wait_time_seconds=10,
+            poke_interval=poke_interval_collector,
+            pool='job_collector_pool'
+        )
 
-    result_transformer = JobResultFromMessagesOperator(
-        task_id='process_job_result',
-        sqs_sensor_task_id=TASK_ID_SQS_COLLECTOR,
-        pool='job_collector_pool'
-    )
+        result_transformer = JobResultFromMessagesOperator(
+            task_id=task_id_result_transformer,
+            sqs_sensor_task_id=task_id_sqs_collector,
+            pool='job_collector_pool'
+        )
 
-sqs_collector >> result_transformer
+    sqs_collector >> result_transformer
