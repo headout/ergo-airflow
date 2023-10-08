@@ -30,8 +30,7 @@ with DAG(
     schedule_interval=timedelta(seconds=10),
     catchup=False,
     dagrun_timeout=timedelta(minutes=15),
-    max_active_runs=Config.max_runs_dag_job_collector,
-    concurrency=24
+    max_active_runs=Config.max_runs_dag_job_collector
 ) as dag:
     sqs_collector = SQSSensor(
         task_id=TASK_ID_SQS_COLLECTOR,
