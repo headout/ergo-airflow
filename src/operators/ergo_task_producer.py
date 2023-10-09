@@ -8,7 +8,8 @@ from airflow.utils.decorators import apply_defaults
 from airflow.utils.state import State
 from ergo.models import ErgoJob, ErgoTask
 from ergo.config import Config
-
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import joinedload
 
 
 class ErgoTaskQueuerOperator(BaseOperator):
@@ -37,28 +38,9 @@ class ErgoTaskQueuerOperator(BaseOperator):
             raise ValueError(
                 'Provide either static ergo_task_id or callable to get task_id and request_data')
 
-    @provide_session
-    def execute(self, context, session=None):
-        ti = context['ti']
-        if self.ergo_task_callable is not None:
-            result = self.ergo_task_callable()
-            if isinstance(result, (tuple, list)):
-                task_id, req_data = result
-            else:
-                task_id = result
-                req_data = ''
-        else:
-            task_id, req_data = self.ergo_task_id, self.ergo_task_data
-        if req_data is None:
-            req_data = ''
-        if not isinstance(req_data, str):
-            req_data = json.dumps(req_data)
-        self.log.info("Adding task '%s' with data: %s", task_id, req_data)
-        task = ErgoTask(task_id, ti, self.ergo_task_sqs_queue_url, req_data)
-        task.state = State.QUEUED
-        session.add(task)
-        session.flush()
 
+    def create_job(self, task, session=None):
+        self.log.info(f"Creating job for task: {task}")
         success_resp, failed_resp = self._send_to_sqs(self.ergo_task_sqs_queue_url, task)
         if success_resp:
             self.log.info('Successfully pushed SQS task request message')
@@ -75,7 +57,71 @@ class ErgoTaskQueuerOperator(BaseOperator):
             self.log.info(failed_resp)
             task.state = State.UP_FOR_RESCHEDULE
             self.log.info("Task ID: %s, State: %s, Request Data: %s", task.id, task.state, task.request_data)
+        session.commit()
+        return job
 
+    def create_task(self, context, task_id, req_data, session=None):
+        ti = context['ti']
+        ti_dict = context.get('ti_dict', dict())
+        if not ti_dict:
+            ti = context['ti']
+            ti_dict['dag_id'] = ti.dag_id
+            ti_dict['run_id'] = ti.run_id
+        self.log.info(f"Creating task for {task_id}")
+        task = ErgoTask(task_id, ti, self.ergo_task_sqs_queue_url, req_data)
+        task.state = State.QUEUED
+        session.add(task)
+        session.commit()
+        return task
+
+    def _get_ergo_task(self, ti_task_id, ti_dict, session=None):
+        self.log.info(f"Checking if task was created earlier with the following details {ti_task_id} {ti_dict}")
+        try:
+            return(
+                session.query(ErgoTask)
+                .options(joinedload('job'))
+                .filter_by(ti_task_id=ti_task_id, ti_dag_id=ti_dict['dag_id'], ti_run_id=ti_dict['run_id'])
+            ).one()
+        except NoResultFound:
+            self.log.info("Task was not created earlier")
+            # Handle the case where no tasks match the criteria
+            return None
+
+    @provide_session
+    def execute(self, context, session=None):
+        ti = context['ti']
+        ti_dict = context.get('ti_dict', dict())
+        if not ti_dict:
+            ti = context['ti']
+            ti_dict['dag_id'] = ti.dag_id
+            ti_dict['run_id'] = ti.run_id
+        if self.ergo_task_callable is not None:
+            result = self.ergo_task_callable()
+            if isinstance(result, (tuple, list)):
+                task_id, req_data = result
+            else:
+                task_id = result
+                req_data = ''
+        else:
+            task_id, req_data = self.ergo_task_id, self.ergo_task_data
+        if req_data is None:
+            req_data = ''
+        if not isinstance(req_data, str):
+            req_data = json.dumps(req_data)
+        self.log.info("Adding task '%s' with data: %s", task_id, req_data)
+
+        prev_task = self._get_ergo_task(ti_task_id=ti.task_id, ti_dict=ti_dict, session=session)
+        if prev_task is not None:
+            prev_job = prev_task.job
+            self.log.info(f"Ergo task has already been created. : {prev_task}")
+            if prev_job is not None:
+                self.log.info(f"Ergo job was already created : {prev_job}")
+            else:
+                self.log.info("Job was not created")
+                self.create_job(prev_task, session)
+        else:
+            task = self.create_task(task_id=task_id, context=context, req_data=req_data, session=session)
+            job = self.create_job(task=task, session=session)
 
         session.commit()
 
