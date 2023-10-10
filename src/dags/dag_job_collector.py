@@ -1,13 +1,15 @@
 from datetime import timedelta
 
 from airflow import DAG
-from airflow.contrib.sensors.aws_sqs_sensor import SQSSensor
+#from airflow.contrib.sensors.aws_sqs_sensor import SQSSensor
+from airflow.providers.amazon.aws.sensors.sqs import SqsSensor
 from airflow.utils import timezone
 from airflow.utils.dates import days_ago
 
 from ergo.config import Config
 from ergo.operators.sqs.result_from_messages import \
     JobResultFromMessagesOperator
+
 
 TASK_ID_SQS_COLLECTOR = "collect_sqs_messages"
 
@@ -32,11 +34,11 @@ with DAG(
     dagrun_timeout=timedelta(minutes=15),
     max_active_runs=Config.max_runs_dag_job_collector
 ) as dag:
-    sqs_collector = SQSSensor(
+    sqs_collector = SqsSensor(
         task_id=TASK_ID_SQS_COLLECTOR,
         sqs_queue=sqs_queue_url,
         max_messages=10,
-        wait_time_seconds=10,
+        num_batches=5,
         poke_interval=poke_interval_collector,
         pool='job_collector_pool'
     )
@@ -46,5 +48,6 @@ with DAG(
         sqs_sensor_task_id=TASK_ID_SQS_COLLECTOR,
         pool='job_collector_pool'
     )
+
 
 sqs_collector >> result_transformer
