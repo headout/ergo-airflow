@@ -133,7 +133,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
             {
                 'Id': str(task.id),
                 'MessageBody': task.request_data,
-                'MessageGroupId': task.task_id,
+                'MessageGroupId': task.task_id.strip(),
                 'MessageDeduplicationId': str(task.id)
             }
         ]
