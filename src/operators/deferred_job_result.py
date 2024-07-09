@@ -48,9 +48,9 @@ class ErgoDeferredJobResult(BaseOperator):
             ti_dict['run_id'] = ti.run_id
         task = self._get_ergo_task(ti_dict, session=session)
         job = task.job
-
+        retry_interval = 20
         while task.state not in self.wait_for_state:
-            self.defer(trigger=TimeDeltaTrigger(timedelta(seconds=40)), method_name="execute")
+            self.defer(trigger=TimeDeltaTrigger(timedelta(seconds=retry_interval)), method_name="execute")
             task = self._get_ergo_task(ti_dict, session=session)
             self.log.info('Received task - %s... STATE: %s', str(task), task.state)
             job = task.job
@@ -60,6 +60,8 @@ class ErgoDeferredJobResult(BaseOperator):
             else:
                 self.log.info('Waiting for task "%s" to be queued...', str(task))
                 self.log.info('Waiting for task "%s" to reach state %s...', str(task), self.wait_for_state)
+            if retry_interval < 60:
+                retry_interval +=20
 
         if task.state == State.FAILED:
             if job is not None:
