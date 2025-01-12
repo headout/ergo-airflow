@@ -7,6 +7,7 @@ from airflow.sensors.base import BaseSensorOperator
 from airflow.triggers.temporal import TimeDeltaTrigger
 from ergo.exceptions import ErgoFailedResultException
 from ergo.models import ErgoJob, ErgoTask
+from ergo.triggers.task_poll import TaskPollTrigger
 from sqlalchemy.orm import joinedload
 from airflow.triggers.temporal import TimeDeltaTrigger
 
@@ -40,17 +41,12 @@ class ErgoDeferredJobResult(BaseOperator):
         ).one()
 
     @provide_session
-    def execute(self, context, session=None, event=None):
-        ti_dict = context.get('ti_dict', dict())
-        if not ti_dict:
-            ti = context['ti']
-            ti_dict['dag_id'] = ti.dag_id
-            ti_dict['run_id'] = ti.run_id
+    def _get_task_status(self, session=None):
         task = self._get_ergo_task(ti_dict, session=session)
         job = task.job
 
+        # Fallback from triggerer to worker polling if triggere fails
         while task.state not in self.wait_for_state:
-            self.defer(trigger=TimeDeltaTrigger(timedelta(seconds=15)), method_name="execute")
             task = self._get_ergo_task(ti_dict, session=session)
             self.log.info('Received task - %s... STATE: %s', str(task), task.state)
             job = task.job
@@ -60,6 +56,7 @@ class ErgoDeferredJobResult(BaseOperator):
             else:
                 self.log.info('Waiting for task "%s" to be queued...', str(task))
                 self.log.info('Waiting for task "%s" to reach state %s...', str(task), self.wait_for_state)
+            return false
 
         if task.state == State.FAILED:
             if job is not None:
@@ -69,6 +66,17 @@ class ErgoDeferredJobResult(BaseOperator):
                 raise ErgoFailedResultException(400, "Cron execution failed due to unknown reason")
 
         self.log.info('Task - %s reached state %s', str(task), task.state)
+
+        return true
+
+    def execute(self, context, event=None):
+        ti_dict = context.get('ti_dict', dict())
+        if not ti_dict:
+            ti = context['ti']
+            ti_dict['dag_id'] = ti.dag_id
+            ti_dict['run_id'] = ti.run_id
+        self.defer(trigger=TaskPollTrigger(ti_dict, pusher_task_id, wait_for_state, 20), method_name="execute")
+        self._get_task_status()
         return
 
 
