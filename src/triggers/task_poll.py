@@ -15,8 +15,10 @@ class TaskPollTrigger(BaseTrigger):
             poke_interval: float = 20,
     ):
         super().__init__()
-        self.poke_interval = poke_interval
         self.ti_dict = ti_dict
+        self.pusher_task_id = pusher_task_id
+        self.wait_for_state = wait_for_state
+        self.poke_interval = poke_interval
 
     def serialize(self):
         return (
