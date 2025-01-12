@@ -1,8 +1,11 @@
 import asyncio
+import os
 from concurrent.futures import ThreadPoolExecutor
 from airflow.triggers.base import BaseTrigger, TriggerEvent
 from airflow.utils.db import provide_session
 from airflow.utils.state import State
+
+os.environ['PYTHONASYNCIODEBUG'] = '1'
 
 
 class TaskPollTrigger(BaseTrigger):
