@@ -56,7 +56,7 @@ class ErgoDeferredJobResult(BaseOperator):
             else:
                 self.log.info('Waiting for task "%s" to be queued...', str(task))
                 self.log.info('Waiting for task "%s" to reach state %s...', str(task), self.wait_for_state)
-            return false
+            return False
 
         if task.state == State.FAILED:
             if job is not None:
@@ -67,7 +67,7 @@ class ErgoDeferredJobResult(BaseOperator):
 
         self.log.info('Task - %s reached state %s', str(task), task.state)
 
-        return true
+        return True
 
     def execute(self, context, event=None):
         ti_dict = context.get('ti_dict', dict())

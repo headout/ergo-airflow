@@ -57,16 +57,14 @@ class TaskPollTrigger(BaseTrigger):
             else:
                 self.log.info('Waiting for task "%s" to be queued...', str(task))
                 self.log.info('Waiting for task "%s" to reach state %s...', str(task), self.wait_for_state)
-            return false
+            return False
 
         self.log.info('Task - %s reached state %s', str(task), task.state)
-        return true
+        return True
 
     async def run(self):
         while True:
-            with ThreadPoolExecutor(max_workers=1) as exe:
-                future = exe.submit(self._check_task_status)
-                task_completed = future.result()
-                if task_completed:
-                    yield TriggerEvent(True)
+            task_completed = await self._check_task_status()
+            if task_completed:
+                yield TriggerEvent(True)
             await asyncio.sleep(self.poke_interval)
