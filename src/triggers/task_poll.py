@@ -35,37 +35,35 @@ class TaskPollTrigger(BaseTrigger):
         )
 
     async def _get_ergo_task(self, session=None):
-        # return (
-        #     session.query(ErgoTask)
-        #     .options(joinedload('job'))
-        #     .filter_by(ti_task_id=self.pusher_task_id, ti_dag_id=self.ti_dict['dag_id'], ti_run_id=self.ti_dict['run_id'])
-        # ).one()
-        return True
+        return (
+            session.query(ErgoTask)
+            .options(joinedload('job'))
+            .filter_by(ti_task_id=self.pusher_task_id, ti_dag_id=self.ti_dict['dag_id'], ti_run_id=self.ti_dict['run_id'])
+        ).one()
 
 
     @provide_session
     async def _check_task_status(self, session=None):
-        # task = await self._get_ergo_task(session=session)
-        # job = task.job
-        #
-        # if task.state not in self.wait_for_state:
-        #     self.log.info('Received task - %s... STATE: %s', str(task), task.state)
-        #     job = task.job
-        #     if job is not None:
-        #         self.log.info(
-        #             'Job - (%s)' + (f'responded back at {job.response_at}' if job.response_at else ''), str(job))
-        #     else:
-        #         self.log.info('Waiting for task "%s" to be queued...', str(task))
-        #         self.log.info('Waiting for task "%s" to reach state %s...', str(task), self.wait_for_state)
-        #     return False
-        #
-        # self.log.info('Task - %s reached state %s', str(task), task.state)
+        task = await self._get_ergo_task(session=session)
+        job = task.job
+
+        if task.state not in self.wait_for_state:
+            self.log.info('Received task - %s... STATE: %s', str(task), task.state)
+            job = task.job
+            if job is not None:
+                self.log.info(
+                    'Job - (%s)' + (f'responded back at {job.response_at}' if job.response_at else ''), str(job))
+            else:
+                self.log.info('Waiting for task "%s" to be queued...', str(task))
+                self.log.info('Waiting for task "%s" to reach state %s...', str(task), self.wait_for_state)
+            return False
+
+        self.log.info('Task - %s reached state %s', str(task), task.state)
         return True
 
     async def run(self):
         while True:
-            # task_completed = await self._check_task_status()
-            if True:
-                await asyncio.sleep(self.poke_interval)
+            task_completed = await self._check_task_status()
+            if task_completed:
                 yield TriggerEvent(True)
             await asyncio.sleep(self.poke_interval)
