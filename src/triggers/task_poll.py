@@ -25,7 +25,7 @@ class TaskPollTrigger(BaseTrigger):
 
     def serialize(self):
         return (
-            "eta.triggers.sql.TaskPollTrigger",
+            "ergo.triggers.task_poll.TaskPollTrigger",
             {
                 "ti_dict": self.ti_dict,
                 "pusher_task_id": self.pusher_task_id,
@@ -64,7 +64,7 @@ class TaskPollTrigger(BaseTrigger):
 
     async def run(self):
         while True:
-            task_completed = await self._check_task_status()
-            if task_completed:
+            # task_completed = await self._check_task_status()
+            if True:
                 yield TriggerEvent(True)
             await asyncio.sleep(self.poke_interval)
