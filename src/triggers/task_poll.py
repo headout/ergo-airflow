@@ -6,6 +6,7 @@ from airflow.utils.db import provide_session
 from airflow.utils.state import State
 from ergo.exceptions import ErgoFailedResultException
 from ergo.models import ErgoJob, ErgoTask
+from sqlalchemy.orm import joinedload
 
 os.environ['PYTHONASYNCIODEBUG'] = '1'
 
