@@ -87,6 +87,7 @@ class ErgoDeferredJobResult(BaseOperator):
             ti_dict['dag_id'] = ti.dag_id
             ti_dict['run_id'] = ti.run_id
         self._get_task_status(ti_dict)
+        self.log.info("Completing remaining operator")
         return
 
 
