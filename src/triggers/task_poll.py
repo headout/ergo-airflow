@@ -66,5 +66,6 @@ class TaskPollTrigger(BaseTrigger):
         while True:
             # task_completed = await self._check_task_status()
             if True:
+                await asyncio.sleep(self.poke_interval)
                 yield TriggerEvent(True)
             await asyncio.sleep(self.poke_interval)
