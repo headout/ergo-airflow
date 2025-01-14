@@ -41,7 +41,7 @@ class ErgoDeferredJobResult(BaseOperator):
         ).one()
 
     @provide_session
-    def _get_task_status(self, session=None):
+    def _get_task_status(self, ti_dict, session=None):
         task = self._get_ergo_task(ti_dict, session=session)
         job = task.job
 
@@ -75,13 +75,18 @@ class ErgoDeferredJobResult(BaseOperator):
             ti = context['ti']
             ti_dict['dag_id'] = ti.dag_id
             ti_dict['run_id'] = ti.run_id
-        self._get_task_status()
+        self._get_task_status(ti_dict)
         self.log.info('Polling DB task status using trigger')
         self.defer(trigger=TaskPollTrigger(ti_dict, self.pusher_task_id, self.wait_for_state, 20), method_name="execute")
         return
 
     def execute_complete(self, context, event=None):
-        self._get_task_status()
+        ti_dict = context.get('ti_dict', dict())
+        if not ti_dict:
+            ti = context['ti']
+            ti_dict['dag_id'] = ti.dag_id
+            ti_dict['run_id'] = ti.run_id
+        self._get_task_status(ti_dict)
         return
 
 
