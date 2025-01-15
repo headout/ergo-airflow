@@ -85,8 +85,7 @@ class ErgoDeferredJobResult(BaseOperator):
             self.log.info('Polling DB task status using task poll trigger. Check triggerer logs to get more state info')
             self.defer(trigger=TaskPollTrigger(ti_dict, self.pusher_task_id, self.wait_for_state, 20), method_name="execute_complete")
         else:
-            self.log.info('Polling DB task status using airflow worker and timedelta trigger')
-            self.defer(trigger=TimeDeltaTrigger(timedelta(seconds=20)), method_name="execute_complete")
+            self._get_task_status(context, ti_dict)
         return
 
     def execute_complete(self, context, event=None):
