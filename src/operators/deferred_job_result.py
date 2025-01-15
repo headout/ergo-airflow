@@ -63,7 +63,6 @@ class ErgoDeferredJobResult(BaseOperator):
             if self.task_poll_trigger:
                 self.defer(trigger=TimeDeltaTrigger(timedelta(seconds=20)), method_name="execute_complete")
 
-        self.xcom_push(context, "ergo_task_state", "completed")
         if task.state == State.FAILED:
             if job is not None:
                 self.log.info('Job - (%s)' + (f'responded back at {job.response_at}' if job.response_at else ''), str(job))
@@ -71,6 +70,7 @@ class ErgoDeferredJobResult(BaseOperator):
             else:
                 raise ErgoFailedResultException(400, "Cron execution failed due to unknown reason")
 
+        self.xcom_push(context, "ergo_task_state", "success")
         self.log.info('Task - %s reached state %s', str(task), task.state)
 
 
