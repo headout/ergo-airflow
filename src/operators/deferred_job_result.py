@@ -44,7 +44,7 @@ class ErgoDeferredJobResult(BaseOperator):
         ).one()
 
     @provide_session
-    def _get_task_status(self, ti_dict, session=None):
+    def _get_task_status(self, context, ti_dict, session=None):
         task = self._get_ergo_task(ti_dict, session=session)
         job = task.job
 
@@ -96,7 +96,7 @@ class ErgoDeferredJobResult(BaseOperator):
             ti_dict['dag_id'] = ti.dag_id
             ti_dict['run_id'] = ti.run_id
         self.log.info("Control transferred from trigger to worker for remaining operator execution")
-        self._get_task_status(ti_dict)
+        self._get_task_status(context, ti_dict)
         return
 
 
