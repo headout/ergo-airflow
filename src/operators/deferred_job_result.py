@@ -45,7 +45,7 @@ class ErgoDeferredJobResult(BaseOperator):
         task = self._get_ergo_task(ti_dict, session=session)
         job = task.job
 
-        # Fallback from triggerer to worker polling if triggere fails
+        # Fallback from triggerer to worker polling if triggerer fails
         while task.state not in self.wait_for_state:
             task = self._get_ergo_task(ti_dict, session=session)
             self.log.info('Received task - %s... STATE: %s', str(task), task.state)
@@ -56,7 +56,6 @@ class ErgoDeferredJobResult(BaseOperator):
             else:
                 self.log.info('Waiting for task "%s" to be queued...', str(task))
                 self.log.info('Waiting for task "%s" to reach state %s...', str(task), self.wait_for_state)
-            return False
 
         if task.state == State.FAILED:
             if job is not None:
@@ -67,7 +66,6 @@ class ErgoDeferredJobResult(BaseOperator):
 
         self.log.info('Task - %s reached state %s', str(task), task.state)
 
-        return True
 
     def execute(self, context, event=None):
         ti_dict = context.get('ti_dict', dict())
@@ -76,7 +74,7 @@ class ErgoDeferredJobResult(BaseOperator):
             ti_dict['dag_id'] = ti.dag_id
             ti_dict['run_id'] = ti.run_id
         self._get_task_status(ti_dict)
-        self.log.info('Polling DB task status using trigger')
+        self.log.info('Polling DB task status using task poll trigger. Check triggerer logs to get more state info')
         self.defer(trigger=TaskPollTrigger(ti_dict, self.pusher_task_id, self.wait_for_state, 20), method_name="execute_complete")
         return
 
@@ -86,8 +84,8 @@ class ErgoDeferredJobResult(BaseOperator):
             ti = context['ti']
             ti_dict['dag_id'] = ti.dag_id
             ti_dict['run_id'] = ti.run_id
+        self.log.info("Control transferred from trigger to worker for remaining operator execution")
         self._get_task_status(ti_dict)
-        self.log.info("Completing remaining operator")
         return
 
 
