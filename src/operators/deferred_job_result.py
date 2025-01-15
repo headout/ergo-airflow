@@ -63,6 +63,7 @@ class ErgoDeferredJobResult(BaseOperator):
             if self.task_poll_trigger:
                 self.defer(trigger=TimeDeltaTrigger(timedelta(seconds=20)), method_name="execute_complete")
 
+        self.xcom_push(context, "ergo_task_state", "completed")
         if task.state == State.FAILED:
             if job is not None:
                 self.log.info('Job - (%s)' + (f'responded back at {job.response_at}' if job.response_at else ''), str(job))
@@ -96,7 +97,6 @@ class ErgoDeferredJobResult(BaseOperator):
             ti_dict['run_id'] = ti.run_id
         self.log.info("Control transferred from trigger to worker for remaining operator execution")
         self._get_task_status(ti_dict)
-        self.xcom_push(context, "ergo_task_state", "completed")
         return
 
 
