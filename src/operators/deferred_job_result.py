@@ -73,7 +73,6 @@ class ErgoDeferredJobResult(BaseOperator):
             ti = context['ti']
             ti_dict['dag_id'] = ti.dag_id
             ti_dict['run_id'] = ti.run_id
-        self._get_task_status(ti_dict)
         self.log.info('Polling DB task status using task poll trigger. Check triggerer logs to get more state info')
         self.defer(trigger=TaskPollTrigger(ti_dict, self.pusher_task_id, self.wait_for_state, 20), method_name="execute_complete")
         return
