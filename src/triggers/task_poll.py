@@ -37,7 +37,7 @@ class TaskPollTrigger(BaseTrigger):
             },
         )
 
-    async def _get_ergo_task(self, session=None):
+    def _get_ergo_task(self, session=None):
         return (
             session.query(ErgoTask)
             .options(joinedload('job'))
@@ -47,7 +47,7 @@ class TaskPollTrigger(BaseTrigger):
 
     @provide_session
     async def _check_task_status(self, session=None):
-        task = await self._get_ergo_task(session=session)
+        task = self._get_ergo_task(session=session)
         job = task.job
 
         if task.state not in self.wait_for_state:
