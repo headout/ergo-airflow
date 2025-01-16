@@ -46,7 +46,7 @@ class TaskPollTrigger(BaseTrigger):
 
 
     @provide_session
-    async def _check_task_status(self, session=None):
+    def _check_task_status(self, session=None):
         task = self._get_ergo_task(session=session)
         job = task.job
 
@@ -66,7 +66,7 @@ class TaskPollTrigger(BaseTrigger):
 
     async def run(self):
         while True:
-            task_completed = await self._check_task_status()
+            task_completed = self._check_task_status()
             if task_completed:
                 yield TriggerEvent(True)
             await asyncio.sleep(self.poke_interval)
