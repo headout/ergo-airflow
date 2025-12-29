@@ -2,9 +2,9 @@ from datetime import datetime, timedelta
 from random import choice
 
 from airflow import DAG
-from airflow.contrib.sensors.aws_sqs_sensor import SQSSensor
-from airflow.operators.bash_operator import BashOperator
-from airflow.operators.dummy_operator import DummyOperator
+from airflow.providers.amazon.aws.sensors.sqs import SqsSensor
+from airflow.operators.bash import BashOperator
+from airflow.operators.dummy import DummyOperator
 from airflow.operators.ergo import ErgoTaskProducerOperator
 from airflow.sensors.ergo import ErgoJobResultSensor
 from airflow.utils.dates import days_ago

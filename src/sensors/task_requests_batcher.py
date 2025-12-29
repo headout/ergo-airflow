@@ -3,7 +3,6 @@ from datetime import timedelta
 from airflow.sensors.base_sensor_operator import BaseSensorOperator
 from airflow.utils import timezone
 from airflow.utils.db import provide_session
-from airflow.utils.decorators import apply_defaults
 from airflow.utils.state import State
 from sqlalchemy import func, text
 
@@ -32,7 +31,6 @@ class TaskRequestBatchSensor(BaseSensorOperator):
     filter_ergo_task = ErgoTask.state.in_(
         [State.SCHEDULED, State.UP_FOR_RESCHEDULE])
 
-    @apply_defaults
     def __init__(
         self,
         max_requests: int,

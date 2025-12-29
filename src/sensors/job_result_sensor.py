@@ -2,7 +2,6 @@ from datetime import datetime
 
 from airflow.sensors.base_sensor_operator import BaseSensorOperator
 from airflow.utils.db import provide_session
-from airflow.utils.decorators import apply_defaults
 from airflow.utils.state import State
 from ergo.exceptions import ErgoFailedResultException
 from ergo.models import ErgoJob, ErgoTask
@@ -12,7 +11,6 @@ from sqlalchemy.orm import joinedload
 class ErgoJobResultSensor(BaseSensorOperator):
     poke_context_fields = ('pusher_task_id', 'wait_for_state')
 
-    @apply_defaults
     def __init__(
         self,
         pusher_task_id: str,

@@ -1,10 +1,9 @@
 import json
 from typing import Union, List, Tuple
-from airflow.contrib.hooks.aws_sqs_hook import SQSHook
-from airflow.models import BaseOperator
+from airflow.providers.amazon.aws.hooks.sqs import SqsHook
+from airflow.models.baseoperator import BaseOperator
 from ergo.links.ergo_task_detail import ErgoTaskDetailLink
 from airflow.utils.db import provide_session
-from airflow.utils.decorators import apply_defaults
 from airflow.utils.state import State
 from ergo.models import ErgoJob, ErgoTask
 from ergo.config import Config
@@ -17,7 +16,6 @@ class ErgoTaskQueuerOperator(BaseOperator):
 
     operator_extra_links = (ErgoTaskDetailLink(),)
 
-    @apply_defaults
     def __init__(
             self,
             ergo_task_callable: callable = None,
@@ -126,7 +124,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
         session.commit()
 
     def _send_to_sqs(self, queue_url, task) -> Tuple[List, List]:
-        sqs_client = SQSHook(aws_conn_id=self.aws_conn_id).get_conn()
+        sqs_client = SqsHook(aws_conn_id=self.aws_conn_id).get_conn()
         self.log.info('Trying to push a message on queue: %s\n', queue_url)
         self.log.info('Request task: %s', task.task_id)
         entries = [

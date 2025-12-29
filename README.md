@@ -7,7 +7,7 @@
 
 ## Compatibility
 
-Apache Airflow 2.0.1+
+Apache Airflow 3.1.5+
 
 ## Usage
 

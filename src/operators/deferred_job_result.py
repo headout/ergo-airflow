@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta
 from airflow.utils.db import provide_session
-from airflow.utils.decorators import apply_defaults
 from airflow.utils.state import State
-from airflow.models import BaseOperator
+from airflow.models.baseoperator import BaseOperator
 from airflow.sensors.base import BaseSensorOperator
 from airflow.triggers.temporal import TimeDeltaTrigger
 from ergo.exceptions import ErgoFailedResultException
@@ -14,7 +13,6 @@ from airflow.triggers.temporal import TimeDeltaTrigger
 
 class ErgoDeferredJobResult(BaseOperator):
 
-    @apply_defaults
     def __init__(
             self,
             pusher_task_id: str,
