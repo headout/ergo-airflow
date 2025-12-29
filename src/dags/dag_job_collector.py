@@ -27,7 +27,7 @@ with DAG(
     'ergo_job_collector',
     default_args=default_args,
     is_paused_upon_creation=False,
-    schedule_interval=timedelta(seconds=10),
+    schedule=timedelta(seconds=10),
     catchup=False,
     dagrun_timeout=timedelta(minutes=15),
     max_active_runs=Config.max_runs_dag_job_collector

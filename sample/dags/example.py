@@ -27,7 +27,7 @@ def random_task_decider():
 with DAG(
     'example_sqs',
     default_args=default_args,
-    schedule_interval=timedelta(minutes=1)
+    schedule=timedelta(minutes=1)
 ) as dag:
     start_task = DummyOperator(task_id="start")
     stop_task = DummyOperator(task_id="stop")

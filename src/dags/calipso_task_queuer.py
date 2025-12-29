@@ -29,7 +29,7 @@ with DAG(
         'calipso_ergo_task_queuer',
         default_args=default_args,
         is_paused_upon_creation=False,
-        schedule_interval=timedelta(seconds=10),
+        schedule=timedelta(seconds=10),
         catchup=False,
         max_active_runs=max_concurrent_runs,
         dagrun_timeout=timedelta(minutes=5)
