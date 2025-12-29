@@ -3,7 +3,7 @@ from datetime import timedelta
 from airflow import DAG
 from airflow.providers.amazon.aws.sensors.sqs import SqsSensor
 from airflow.utils import timezone
-from airflow.utils.dates import days_ago
+from datetime import datetime, timedelta
 
 from ergo.config import Config
 from ergo.operators.sqs.result_from_messages import \
@@ -16,7 +16,7 @@ default_args = {
     'depends_on_past': False,
     'retries': 10,
     'retry_delay': timedelta(seconds=30),
-    'start_date': days_ago(1),
+    'start_date': datetime.now() - timedelta(days=1),
     'priority_weight': 900,
 }
 

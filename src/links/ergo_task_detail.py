@@ -1,4 +1,4 @@
-from airflow.models.baseoperator import BaseOperatorLink
+from airflow.models import BaseOperatorLink
 from flask import url_for
 
 

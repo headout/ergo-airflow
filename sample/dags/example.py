@@ -7,14 +7,13 @@ from airflow.operators.bash import BashOperator
 from airflow.operators.dummy import DummyOperator
 from airflow.operators.ergo import ErgoTaskProducerOperator
 from airflow.sensors.ergo import ErgoJobResultSensor
-from airflow.utils.dates import days_ago
 
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
     'retries': 3,
     'retry_delay': timedelta(seconds=30),
-    'start_date': days_ago(1),
+    'start_date': datetime.now() - timedelta(days=1),
 }
 
 SAMPLE_TASK_IDS = ['noArg', 'oneArg', 'instance_noArg', 'spring_noArg']
