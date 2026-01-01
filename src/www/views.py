@@ -6,7 +6,7 @@ import pendulum
 from airflow.exceptions import DagRunNotFound
 from airflow.models.dagrun import DagRun
 from airflow.utils.db import provide_session
-from airflow.www import utils as airflowutils
+from airflow.utils.state import State
 from ergo.models import ErgoTask
 from flask import request
 from flask_appbuilder import BaseView, expose, has_access
@@ -77,5 +77,5 @@ class ErgoView(BaseView):
             execution_date=execution_date.isoformat(),
             req_attrs=req_attrs,
             res_attrs=res_attrs,
-            state_token=airflowutils.state_token(task.state)
+            state_token=task.state
         )

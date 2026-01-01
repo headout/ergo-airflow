@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from airflow.sensors.base_sensor_operator import BaseSensorOperator
+from airflow.sensors.base import BaseSensorOperator
 from airflow.utils import timezone
 from airflow.utils.db import provide_session
 from airflow.utils.state import State

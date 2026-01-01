@@ -34,7 +34,7 @@ with DAG(
 ) as dag:
     sqs_collector = SqsSensor(
         task_id=TASK_ID_SQS_COLLECTOR,
-        queue_url=sqs_queue_url,
+        sqs_queue=sqs_queue_url,
         max_messages=10,
         wait_time_seconds=10,
         poke_interval=poke_interval_collector,

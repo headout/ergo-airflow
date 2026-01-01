@@ -2,7 +2,7 @@ import json
 from typing import Union
 
 from airflow.providers.amazon.aws.hooks.sqs import SqsHook
-from airflow.models.baseoperator import BaseOperator
+from airflow.models import BaseOperator
 from airflow.utils.db import provide_session
 
 from ergo.config import Config

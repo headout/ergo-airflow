@@ -1,7 +1,7 @@
 import json
 from typing import Union, List, Tuple
 from airflow.providers.amazon.aws.hooks.sqs import SqsHook
-from airflow.models.baseoperator import BaseOperator
+from airflow.models import BaseOperator
 from ergo.links.ergo_task_detail import ErgoTaskDetailLink
 from airflow.utils.db import provide_session
 from airflow.utils.state import State
