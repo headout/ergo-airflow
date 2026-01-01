@@ -3,12 +3,12 @@ from airflow.utils.db import provide_session
 from airflow.utils.state import State
 from airflow.models import BaseOperator
 from airflow.sensors.base import BaseSensorOperator
-from airflow.triggers.temporal import TimeDeltaTrigger
+from airflow.providers.standard.triggers.temporal import TimeDeltaTrigger
 from ergo.exceptions import ErgoFailedResultException
 from ergo.models import ErgoJob, ErgoTask
 from ergo.triggers.task_poll import TaskPollTrigger
 from sqlalchemy.orm import joinedload
-from airflow.triggers.temporal import TimeDeltaTrigger
+from airflow.providers.standard.triggers.temporal import TimeDeltaTrigger
 
 
 class ErgoDeferredJobResult(BaseOperator):
