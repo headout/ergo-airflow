@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 class ErgoTask(Base):
     __tablename__ = 'ergo_task'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     task_id = Column(String(128), nullable=False)
@@ -65,6 +66,7 @@ class ErgoTask(Base):
 
 class ErgoJob(Base):
     __tablename__ = 'ergo_job'
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String(128), primary_key=True)
     task_id = Column(
