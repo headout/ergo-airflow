@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 class ErgoTask(Base):
     __tablename__ = 'ergo_task'
-    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True)
     task_id = Column(String(128), nullable=False)
@@ -49,7 +48,8 @@ class ErgoTask(Base):
         ),
         UniqueConstraint(
             ti_task_id, ti_dag_id, ti_run_id, name='ix_unique_task_instance'
-        )
+        ),
+        {'extend_existing': True}
     )
 
     def __str__(self):
