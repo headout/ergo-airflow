@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from airflow.sensors.base import BaseSensorOperator
+from airflow.sdk.bases.sensor import BaseSensorOperator
 from airflow.utils.db import provide_session
 from airflow.utils.state import State
 from ergo.exceptions import ErgoFailedResultException

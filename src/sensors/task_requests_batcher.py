@@ -1,7 +1,7 @@
 from datetime import timedelta
 
-from airflow.sensors.base import BaseSensorOperator
-from airflow.utils import timezone
+from airflow.sdk.bases.sensor import BaseSensorOperator
+from airflow.sdk import timezone
 from airflow.utils.db import provide_session
 from airflow.utils.state import State
 from sqlalchemy import func, text

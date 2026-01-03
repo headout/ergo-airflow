@@ -4,16 +4,14 @@ from functools import cached_property
 
 from airflow.models.base import ID_LEN
 from airflow.models.taskinstance import TaskInstance
-from airflow.utils import timezone
+from airflow.sdk import timezone
 from airflow.utils.sqlalchemy import UtcDateTime
 from airflow.utils.state import State
 from ergo import JobResultStatus
 from sqlalchemy import (Column, ForeignKey, ForeignKeyConstraint, Integer,
                         String, Text, UniqueConstraint)
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-
-Base = declarative_base()
+from airflow.models.base import Base
 
 logger = logging.getLogger(__name__)
 

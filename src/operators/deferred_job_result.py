@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from airflow.utils.db import provide_session
 from airflow.utils.state import State
 from airflow.models import BaseOperator
-from airflow.sensors.base import BaseSensorOperator
+from airflow.sdk.bases.sensor import BaseSensorOperator
 from airflow.providers.standard.triggers.temporal import TimeDeltaTrigger
 from ergo.exceptions import ErgoFailedResultException
 from ergo.models import ErgoJob, ErgoTask
