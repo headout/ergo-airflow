@@ -3,7 +3,6 @@ import json
 from airflow.models import BaseOperator
 from airflow.utils import timezone
 from airflow.utils.db import provide_session
-from airflow.utils.decorators import apply_defaults
 from airflow.utils.state import State
 from sqlalchemy.orm import joinedload
 
@@ -12,7 +11,6 @@ from ergo.models import ErgoJob, ErgoTask
 
 
 class JobResultFromMessagesOperator(BaseOperator):
-    @apply_defaults
     def __init__(
         self,
         sqs_sensor_task_id: str,

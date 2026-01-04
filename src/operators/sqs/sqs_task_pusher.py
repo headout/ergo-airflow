@@ -1,16 +1,14 @@
 from typing import List, Tuple
 
-from airflow.contrib.hooks.aws_sqs_hook import SQSHook
+from airflow.providers.amazon.aws.hooks.sqs import SqsHook
 from airflow.models import BaseOperator
 from airflow.utils.db import provide_session
-from airflow.utils.decorators import apply_defaults
 from airflow.utils.state import State
 from ergo.models import ErgoJob, ErgoTask
 
 class SqsTaskPusherOperator(BaseOperator):
     filter_ergo_task = ErgoTask.state.in_([State.SCHEDULED, State.UP_FOR_RESCHEDULE])
 
-    @apply_defaults
     def __init__(
         self,
         task_id_collector: str,
@@ -66,7 +64,7 @@ class SqsTaskPusherOperator(BaseOperator):
 
     def _send_to_sqs(self, queue_url, query) -> Tuple[List, List]:
         tasks = list(query)
-        sqs_client = SQSHook(aws_conn_id=self.aws_conn_id).get_conn()
+        sqs_client = SqsHook(aws_conn_id=self.aws_conn_id).get_conn()
         self.log.info('Trying to push %d messages on queue: %s\n',
                       len(tasks), queue_url)
         self.log.info('Request tasks: ' + '\n'.join([str(task) for task in tasks]))
