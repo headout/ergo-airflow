@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from airflow.configuration import conf
 
-from ergo import SECTION_NAME
+SECTION_NAME = "ergo"
 
 
 class Config(object):

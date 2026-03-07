@@ -6,7 +6,6 @@ from airflow.models.base import ID_LEN
 from airflow.sdk import timezone
 from airflow.utils.sqlalchemy import UtcDateTime
 from airflow.utils.state import State
-from ergo import JobResultStatus
 from sqlalchemy import (Column, ForeignKey, Integer,
                         String, Text, UniqueConstraint)
 from sqlalchemy.orm import declarative_base
@@ -70,8 +69,8 @@ class ErgoJob(Base):
         unique=True
     )
     result_data = Column(Text, nullable=True)
-    result_code = Column(Integer, default=JobResultStatus.NONE,
-                         nullable=False)  # enum{JobResultStatus}
+    result_code = Column(Integer, default=0,
+                         nullable=False)  # enum{JobResultStatus} 0=NONE
     _error_msg = Column('error_msg', Text, nullable=True)
 
     created_at = Column(
