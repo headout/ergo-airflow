@@ -34,7 +34,6 @@ def upgrade():
     sa.Column('ti_task_id', sa.String(length=250), nullable=False),
     sa.Column('ti_dag_id', sa.String(length=250), nullable=False),
     sa.Column('ti_run_id', sa.String(length=250), nullable=False),
-    sa.ForeignKeyConstraint(['ti_task_id', 'ti_dag_id', 'ti_run_id'], ['task_instance.task_id', 'task_instance.dag_id', 'task_instance.run_id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('ti_task_id', 'ti_dag_id', 'ti_run_id', name='ix_unique_task_instance')
     )

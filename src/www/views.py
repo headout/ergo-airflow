@@ -1,12 +1,11 @@
 import logging
 from functools import wraps
 
-import airflow
 import pendulum
 from airflow.exceptions import DagRunNotFound
 from airflow.models.dagrun import DagRun
-from airflow.utils.db import provide_session
-from airflow.www import utils as airflowutils
+from airflow.utils.session import provide_session
+# airflow.www removed in Airflow 3.x
 from ergo.models import ErgoTask
 from flask import request
 from flask_appbuilder import BaseView, expose, has_access
@@ -14,11 +13,10 @@ from sqlalchemy.orm import joinedload
 
 
 def login_required(func):
-    # when airflow loads plugins, login is still None.
+    # In Airflow 2.x+, authentication is handled by FAB/security manager.
+    # This decorator is a no-op passthrough; actual auth is via @has_access.
     @wraps(func)
     def func_wrapper(*args, **kwargs):
-        if airflow.login:
-            return airflow.login.login_required(func)(*args, **kwargs)
         return func(*args, **kwargs)
     return func_wrapper
 
@@ -77,5 +75,5 @@ class ErgoView(BaseView):
             execution_date=execution_date.isoformat(),
             req_attrs=req_attrs,
             res_attrs=res_attrs,
-            state_token=airflowutils.state_token(task.state)
+            state_token=task.state
         )

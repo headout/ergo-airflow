@@ -3,14 +3,13 @@ import logging
 from functools import cached_property
 
 from airflow.models.base import ID_LEN
-from airflow.models.taskinstance import TaskInstance
-from airflow.utils import timezone
+from airflow.sdk import timezone
 from airflow.utils.sqlalchemy import UtcDateTime
 from airflow.utils.state import State
 from ergo import JobResultStatus
-from sqlalchemy import (Column, ForeignKey, ForeignKeyConstraint, Integer,
+from sqlalchemy import (Column, ForeignKey, Integer,
                         String, Text, UniqueConstraint)
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
@@ -43,14 +42,9 @@ class ErgoTask(Base):
     # task_instance = relationship(TaskInstance, back_populates='ergo_task')
 
     __table_args__ = (
-        ForeignKeyConstraint(
-            (ti_task_id, ti_dag_id, ti_run_id),
-            (TaskInstance.task_id, TaskInstance.dag_id, TaskInstance.run_id),
-            ondelete='CASCADE'
-        ),
         UniqueConstraint(
             ti_task_id, ti_dag_id, ti_run_id, name='ix_unique_task_instance'
-        )
+        ),
     )
 
     def __str__(self):

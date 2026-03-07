@@ -2,7 +2,7 @@ import asyncio
 import os
 from concurrent.futures import ThreadPoolExecutor
 from airflow.triggers.base import BaseTrigger, TriggerEvent
-from airflow.utils.db import provide_session
+from airflow.utils.session import provide_session
 from airflow.utils.state import State
 from ergo.exceptions import ErgoFailedResultException
 from ergo.models import ErgoJob, ErgoTask

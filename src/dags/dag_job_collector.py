@@ -1,9 +1,8 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from airflow import DAG
-from airflow.contrib.sensors.aws_sqs_sensor import SQSSensor
+from airflow.providers.amazon.aws.sensors.sqs import SqsSensor
 from airflow.utils import timezone
-from airflow.utils.dates import days_ago
 
 from ergo.config import Config
 from ergo.operators.sqs.result_from_messages import \
@@ -16,7 +15,7 @@ default_args = {
     'depends_on_past': False,
     'retries': 10,
     'retry_delay': timedelta(seconds=30),
-    'start_date': days_ago(1),
+    'start_date': datetime(2024, 1, 1),
     'priority_weight': 900,
 }
 
@@ -27,12 +26,12 @@ with DAG(
     'ergo_job_collector',
     default_args=default_args,
     is_paused_upon_creation=False,
-    schedule_interval=timedelta(seconds=10),
+    schedule=timedelta(seconds=10),
     catchup=False,
     dagrun_timeout=timedelta(minutes=15),
     max_active_runs=Config.max_runs_dag_job_collector
 ) as dag:
-    sqs_collector = SQSSensor(
+    sqs_collector = SqsSensor(
         task_id=TASK_ID_SQS_COLLECTOR,
         sqs_queue=sqs_queue_url,
         max_messages=10,

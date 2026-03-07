@@ -1,10 +1,9 @@
 import json
 from typing import Union
 
-from airflow.contrib.hooks.aws_sqs_hook import SQSHook
+from airflow.providers.amazon.aws.hooks.sqs import SqsHook
 from airflow.models import BaseOperator
-from airflow.utils.db import provide_session
-from airflow.utils.decorators import apply_defaults
+from airflow.utils.session import provide_session
 
 from ergo.config import Config
 from ergo.links.ergo_task_detail import ErgoTaskDetailLink
@@ -16,7 +15,6 @@ class ErgoTaskProducerOperator(BaseOperator):
 
     operator_extra_links = (ErgoTaskDetailLink(),)
 
-    @apply_defaults
     def __init__(
         self,
         ergo_task_callable: callable = None,

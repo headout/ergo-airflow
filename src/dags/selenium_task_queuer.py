@@ -1,8 +1,7 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from airflow import DAG
 from airflow.utils import timezone
-from airflow.utils.dates import days_ago
 
 from ergo.config import Config
 from ergo.operators.sqs.sqs_task_pusher import SqsTaskPusherOperator
@@ -17,7 +16,7 @@ default_args = {
     'depends_on_past': False,
     'retries': 2,
     'retry_delay': timedelta(minutes=1),
-    'start_date': days_ago(1),
+    'start_date': datetime(2024, 1, 1),
     'priority_weight': 900,
 }
 
@@ -30,7 +29,7 @@ with DAG(
         'selenium_ergo_task_queuer',
         default_args=default_args,
         is_paused_upon_creation=False,
-        schedule_interval=timedelta(seconds=10),
+        schedule=timedelta(seconds=10),
         catchup=False,
         max_active_runs=max_concurrent_runs,
         dagrun_timeout=timedelta(minutes=5)
