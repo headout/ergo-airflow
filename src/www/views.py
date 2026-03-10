@@ -4,7 +4,7 @@ from functools import wraps
 import pendulum
 from airflow.exceptions import DagRunNotFound
 from airflow.models.dagrun import DagRun
-from airflow.utils.session import provide_session
+from ergo.db import provide_session
 # airflow.www removed in Airflow 3.x
 from ergo.models import ErgoTask
 from flask import request

@@ -3,7 +3,7 @@ from typing import Union
 
 from airflow.providers.amazon.aws.hooks.sqs import SqsHook
 from airflow.models import BaseOperator
-from airflow.utils.session import provide_session
+from ergo.db import provide_session
 
 from ergo.config import Config
 from ergo.links.ergo_task_detail import ErgoTaskDetailLink

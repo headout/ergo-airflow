@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from airflow.sdk.bases.sensor import BaseSensorOperator
-from airflow.utils.session import provide_session
+from ergo.db import provide_session
 from airflow.utils.state import State
 from ergo.exceptions import ErgoFailedResultException
 from ergo.models import ErgoJob, ErgoTask

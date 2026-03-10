@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from airflow.sdk.bases.sensor import BaseSensorOperator
 from airflow.sdk import timezone
-from airflow.utils.session import provide_session
+from ergo.db import provide_session
 from airflow.utils.state import State
 from sqlalchemy import func, text
 

@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 from airflow.providers.amazon.aws.hooks.sqs import SqsHook
 from airflow.models import BaseOperator
-from airflow.utils.session import provide_session
+from ergo.db import provide_session
 from airflow.utils.state import State
 from ergo.models import ErgoJob, ErgoTask
 

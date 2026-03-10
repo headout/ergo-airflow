@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from airflow.utils.session import provide_session
+from ergo.db import provide_session
 from airflow.utils.state import State
 from airflow.models import BaseOperator
 from airflow.sdk.bases.sensor import BaseSensorOperator

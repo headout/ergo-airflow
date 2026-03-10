@@ -2,7 +2,7 @@ import json
 
 from airflow.models import BaseOperator
 from airflow.utils import timezone
-from airflow.utils.session import provide_session
+from ergo.db import provide_session
 from airflow.utils.state import State
 from sqlalchemy.orm import joinedload
 
