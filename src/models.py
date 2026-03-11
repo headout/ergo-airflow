@@ -6,7 +6,7 @@ from airflow.models.base import ID_LEN
 from airflow.sdk import timezone
 from airflow.utils.sqlalchemy import UtcDateTime
 from airflow.utils.state import State
-from sqlalchemy import (Column, ForeignKey, ForeignKeyConstraint, Integer,
+from sqlalchemy import (Column, ForeignKey, Integer,
                         String, Text, UniqueConstraint)
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
@@ -40,12 +40,9 @@ class ErgoTask(Base):
     job = relationship('ErgoJob', back_populates='task', uselist=False)
     # task_instance = relationship(TaskInstance, back_populates='ergo_task')
 
+    # FK to task_instance removed from ORM model — the constraint exists in the
+    # DB schema but our standalone engine doesn't know Airflow's tables.
     __table_args__ = (
-        ForeignKeyConstraint(
-            (ti_task_id, ti_dag_id, ti_run_id),
-            ('task_instance.task_id', 'task_instance.dag_id', 'task_instance.run_id'),
-            ondelete='CASCADE'
-        ),
         UniqueConstraint(
             ti_task_id, ti_dag_id, ti_run_id, name='ix_unique_task_instance'
         ),
