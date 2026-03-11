@@ -51,7 +51,7 @@ class ErgoView(BaseView):
             ) from None
         task = (
             session.query(ErgoTask)
-            .options(joinedload('job'))
+            .options(joinedload(ErgoTask.job))
             .filter_by(ti_task_id=task_id, ti_dag_id=dag_id, ti_run_id=run_id)
         ).one()
         job = task.job

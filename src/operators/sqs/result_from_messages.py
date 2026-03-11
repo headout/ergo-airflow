@@ -35,7 +35,7 @@ class JobResultFromMessagesOperator(BaseOperator):
         results.sort(key=lambda res: res['jobId'])
         jobs = (
             session.query(ErgoJob)
-            .options(joinedload('task'))
+            .options(joinedload(ErgoJob.task))
             .filter(ErgoJob.id.in_([res['jobId'] for res in results]))
             .order_by(ErgoJob.id)
         )

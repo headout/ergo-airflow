@@ -77,7 +77,7 @@ class ErgoTaskQueuerOperator(BaseOperator):
         try:
             return(
                 session.query(ErgoTask)
-                .options(joinedload('job'))
+                .options(joinedload(ErgoTask.job))
                 .filter_by(ti_task_id=ti_task_id, ti_dag_id=ti_dict['dag_id'], ti_run_id=ti_dict['run_id'])
             ).one()
         except NoResultFound:
